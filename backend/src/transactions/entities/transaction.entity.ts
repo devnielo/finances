@@ -10,6 +10,7 @@ import { BaseEntity } from '../../common/entities/base.entity';
 import { User } from '../../users/entities/user.entity';
 import { Account } from '../../accounts/entities/account.entity';
 import { Category } from '../../categories/entities/category.entity';
+import { TransactionJournal } from './transaction-journal.entity';
 
 export enum TransactionType {
   WITHDRAWAL = 'withdrawal',
@@ -125,6 +126,12 @@ export class Transaction extends BaseEntity {
   @Column({ type: 'uuid', nullable: true })
   categoryId?: string;
 
+  @Column({ type: 'uuid' })
+  journalId: string;
+
+  @Column({ type: 'int', default: 1 })
+  identifier: number;
+
 
   // Relations
   @ManyToOne(() => User, {
@@ -150,6 +157,12 @@ export class Transaction extends BaseEntity {
   })
   @JoinColumn({ name: 'categoryId' })
   category?: Category;
+
+  @ManyToOne(() => TransactionJournal, (journal) => journal.transactions, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'journalId' })
+  journal: TransactionJournal;
 
 
   // Virtual fields

@@ -3,10 +3,12 @@ import {
   Column,
   Index,
   ManyToOne,
+  OneToMany,
   JoinColumn,
 } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
 import { User } from '../../users/entities/user.entity';
+import { Transaction } from './transaction.entity';
 
 export enum TransactionJournalType {
   WITHDRAWAL = 'withdrawal',
@@ -69,6 +71,12 @@ export class TransactionJournal extends BaseEntity {
   })
   @JoinColumn({ name: 'userId' })
   user: User;
+
+  @OneToMany(() => Transaction, transaction => transaction.journal, {
+    cascade: true,
+    eager: false,
+  })
+  transactions: Transaction[];
 
   // Journal operations
   addTag(tag: string): void {
