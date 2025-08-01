@@ -1,0 +1,359 @@
+@import "tailwindcss";
+
+/* Importar fuentes de Google */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* Variables CSS personalizadas */
+:root {
+  --spotify-black: #000000;
+  --spotify-dark: #121212;
+  --spotify-card: #1f1f1f;
+  --spotify-hover: #2a2a2a;
+  --spotify-border: #404040;
+  
+  --purple-primary: #8b5cf6;
+  --purple-secondary: #a855f7;
+  --purple-light: #c084fc;
+  --purple-dark: #7c3aed;
+  
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --text-muted: #757575;
+  
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+}
+
+/* Reset y estilos base */
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--spotify-black);
+  color: var(--text-primary);
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #121212 100%);
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--spotify-dark);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--spotify-hover);
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--purple-primary);
+}
+
+/* Estilos para enlaces */
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--purple-light);
+}
+
+/* Selección de texto */
+::selection {
+  background-color: var(--purple-primary);
+  color: white;
+}
+
+::-moz-selection {
+  background-color: var(--purple-primary);
+  color: white;
+}
+
+/* Componentes base */
+@layer components {
+  /* Botones */
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-primary;
+  }
+
+  .btn-primary {
+    @apply btn bg-accent-primary text-white hover:bg-accent-secondary focus:ring-accent-primary;
+  }
+
+  .btn-secondary {
+    @apply btn bg-background-card text-text-primary border border-border-primary hover:bg-background-hover focus:ring-accent-primary;
+  }
+
+  .btn-outline {
+    @apply btn border border-accent-primary text-accent-primary hover:bg-accent-primary hover:text-white focus:ring-accent-primary;
+  }
+
+  .btn-ghost {
+    @apply btn text-text-secondary hover:text-text-primary hover:bg-background-hover focus:ring-accent-primary;
+  }
+
+  .btn-danger {
+    @apply btn bg-error text-white hover:bg-red-600 focus:ring-error;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+
+  .btn-lg {
+    @apply px-6 py-3 text-base;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-background-card border border-border-primary rounded-xl p-6 transition-all duration-200;
+  }
+
+  .card-hover {
+    @apply card hover:bg-background-hover hover:border-border-secondary hover:shadow-spotify-lg;
+  }
+
+  .card-purple {
+    @apply card border-accent-primary/20 bg-gradient-to-br from-background-card to-accent-primary/5;
+  }
+
+  /* Inputs */
+  .input {
+    @apply w-full px-3 py-2 bg-background-secondary border border-border-primary rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent transition-all duration-200;
+  }
+
+  .input-error {
+    @apply input border-error focus:ring-error;
+  }
+
+  /* Labels */
+  .label {
+    @apply block text-sm font-medium text-text-primary mb-2;
+  }
+
+  .label-error {
+    @apply label text-error;
+  }
+
+  /* Texto */
+  .text-gradient {
+    @apply bg-gradient-to-r from-accent-primary to-accent-light bg-clip-text text-transparent;
+  }
+
+  .text-balance {
+    @apply font-mono text-2xl font-bold;
+  }
+
+  /* Layout */
+  .container-main {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-padding {
+    @apply py-8 lg:py-12;
+  }
+
+  /* Estados de carga */
+  .loading-spinner {
+    @apply inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin;
+  }
+
+  .loading-pulse {
+    @apply animate-pulse bg-background-hover rounded;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    @apply fixed left-0 top-0 h-full w-64 bg-background-primary border-r border-border-primary transition-transform duration-300 z-40;
+  }
+
+  .sidebar-item {
+    @apply flex items-center px-4 py-3 text-text-secondary hover:text-text-primary hover:bg-background-hover transition-all duration-200 cursor-pointer;
+  }
+
+  .sidebar-item-active {
+    @apply sidebar-item text-accent-primary bg-accent-primary/10 border-r-2 border-accent-primary;
+  }
+
+  /* Header */
+  .header {
+    @apply sticky top-0 z-30 bg-background-primary/80 backdrop-blur-md border-b border-border-primary;
+  }
+
+  /* Toast notifications */
+  .toast {
+    @apply fixed top-4 right-4 max-w-sm p-4 rounded-lg shadow-spotify-lg border border-border-primary z-50 animate-slide-up;
+  }
+
+  .toast-success {
+    @apply toast bg-background-card border-success text-success;
+  }
+
+  .toast-error {
+    @apply toast bg-background-card border-error text-error;
+  }
+
+  .toast-warning {
+    @apply toast bg-background-card border-warning text-warning;
+  }
+
+  .toast-info {
+    @apply toast bg-background-card border-info text-info;
+  }
+
+  /* Tooltips */
+  .tooltip {
+    @apply absolute z-50 px-2 py-1 text-xs bg-background-tertiary text-text-primary border border-border-primary rounded shadow-spotify whitespace-nowrap;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4;
+  }
+
+  .modal-content {
+    @apply bg-background-card border border-border-primary rounded-xl shadow-spotify-lg max-w-md w-full max-h-[90vh] overflow-y-auto;
+  }
+
+  /* Badges */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-purple {
+    @apply badge bg-accent-primary/20 text-accent-light border border-accent-primary/30;
+  }
+
+  .badge-success {
+    @apply badge bg-success/20 text-green-400 border border-success/30;
+  }
+
+  .badge-error {
+    @apply badge bg-error/20 text-red-400 border border-error/30;
+  }
+
+  .badge-warning {
+    @apply badge bg-warning/20 text-yellow-400 border border-warning/30;
+  }
+}
+
+/* Utilidades personalizadas */
+@layer utilities {
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .border-gradient {
+    border-image: linear-gradient(90deg, var(--purple-primary), var(--purple-light)) 1;
+  }
+
+  .glass {
+    background: rgba(31, 31, 31, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Animaciones personalizadas */
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+/* Dark mode como tema principal */
+.dark {
+  color-scheme: dark;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    @apply -translate-x-full;
+  }
+
+  .sidebar.open {
+    @apply translate-x-0;
+  }
+}
+
+/* Focus visible para accesibilidad */
+.focus-visible:focus {
+  outline: 2px solid var(--purple-primary);
+  outline-offset: 2px;
+}
+
+/* Disabled states */
+.disabled {
+  @apply opacity-50 cursor-not-allowed pointer-events-none;
+}
