@@ -12,6 +12,7 @@ import { CommonModule } from './common/common.module';
 // Feature modules
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { AccountsModule } from './accounts/accounts.module';
 
 // Guards
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
@@ -41,6 +42,7 @@ import cacheConfig from './common/config/cache.config';
     // Feature modules
     AuthModule,
     UsersModule,
+    AccountsModule,
   ],
   controllers: [AppController],
   providers: [
