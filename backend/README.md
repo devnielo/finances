@@ -1,259 +1,383 @@
-# Firefly III Clone - Backend
+# Firefly III Clone API
 
-Modern NestJS backend for the Firefly III Clone personal finance management system.
+Una implementación moderna y escalable de un sistema de gestión financiera personal inspirado en Firefly III, construida con NestJS, TypeORM y PostgreSQL.
 
-## 🚀 Quick Start
+## 🚀 Características Principales
 
-### Prerequisites
+### 🔐 Autenticación y Seguridad
+- Autenticación JWT con refresh tokens
+- Two-Factor Authentication (2FA) con TOTP
+- Códigos de backup para recuperación
+- Guards globales de seguridad
+- Validación robusta de datos
+
+### 💰 Gestión de Cuentas
+- Múltiples tipos de cuenta (Asset, Expense, Revenue, Liability)
+- Validación de IBAN y números de cuenta
+- Cálculo automático de balances
+- Gestión de metadatos y monedas
+- Reordenamiento de cuentas
+
+### 💸 Transacciones Avanzadas
+- Tipos de transacción (withdrawal, deposit, transfer)
+- Split transactions (transacciones divididas)
+- Soporte para múltiples monedas
+- Sistema de reconciliación bancaria
+- Filtrado y búsqueda avanzada
+- Resúmenes estadísticos
+
+### 📊 Reportes y Análisis
+- Resúmenes financieros automáticos
+- Estadísticas de ingresos y gastos
+- Balances por cuenta en tiempo real
+- Métricas de flujo de efectivo
+
+## 🛠️ Stack Tecnológico
+
+- **Backend**: NestJS 10+ con TypeScript
+- **Base de Datos**: PostgreSQL 15+ con TypeORM
+- **Autenticación**: JWT + 2FA (TOTP)
+- **Validación**: class-validator + class-transformer
+- **Documentación**: Swagger/OpenAPI 3.0
+- **Testing**: Jest + Supertest
+- **Arquitectura**: Clean Architecture + DDD
+
+## 📋 Requisitos Previos
 
 - Node.js 18+ 
-- npm or yarn
-- PostgreSQL 13+ (optional for production)
-- Redis 6+ (optional for caching)
+- PostgreSQL 15+
+- npm o yarn
 
-### Installation
+## 🚀 Instalación y Setup
 
-1. **Clone and navigate to backend directory**
-   ```bash
-   cd backend
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Setup environment variables**
-   ```bash
-   cp .env.example .env
-   ```
-   Edit `.env` file with your configuration.
-
-4. **Start the development server**
-   ```bash
-   npm run start:dev
-   ```
-
-The API will be available at `http://localhost:3000/api/v1`
-
-## 📁 Project Structure
-
-```
-src/
-├── common/                 # Shared utilities and configurations
-│   ├── config/            # Configuration files
-│   ├── database/          # Database configuration
-│   ├── filters/           # Exception filters
-│   └── interceptors/      # Request/response interceptors
-├── auth/                  # Authentication module
-├── users/                 # User management
-├── accounts/              # Financial accounts
-├── transactions/          # Transaction management
-├── categories/            # Category system
-├── tags/                  # Tagging system
-├── budgets/               # Budget management
-├── bills/                 # Bill management
-├── rules/                 # Transaction rules
-├── reports/               # Reports and analytics
-├── import-export/         # Data import/export
-├── webhooks/              # Webhook system
-├── currencies/            # Currency management
-├── search/                # Search functionality
-├── attachments/           # File attachments
-├── recurrence/            # Recurring transactions
-├── app.module.ts          # Root application module
-├── app.controller.ts      # Basic API endpoints
-└── main.ts               # Application bootstrap
-```
-
-## 🛠️ Available Scripts
+### 1. Clonar el repositorio
 
 ```bash
-# Development
-npm run start:dev          # Start with hot reload
-npm run start:debug        # Start in debug mode
-
-# Production
-npm run build              # Build for production
-npm run start:prod         # Start production server
-
-# Testing
-npm run test               # Run unit tests
-npm run test:e2e           # Run end-to-end tests
-npm run test:cov           # Run tests with coverage
-
-# Code Quality
-npm run lint               # Run ESLint
-npm run format             # Format code with Prettier
+git clone <repository-url>
+cd firefly-iii-clone/backend
 ```
 
-## 🔧 Configuration
-
-### Environment Variables
-
-Key configuration options in `.env`:
+### 2. Instalar dependencias
 
 ```bash
-# Application
-PORT=3000
-NODE_ENV=development
-APP_URL=http://localhost:3000
-FRONTEND_URL=http://localhost:3001
+npm install
+```
 
-# Database
+### 3. Configurar variables de entorno
+
+Crear archivo `.env` basado en `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+Configurar las variables necesarias:
+
+```env
+# Base de datos
 DB_HOST=localhost
 DB_PORT=5432
-DB_USERNAME=firefly
-DB_PASSWORD=firefly
-DB_DATABASE=firefly_iii_clone
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+DB_DATABASE=firefly_clone
 
 # JWT
-JWT_SECRET=your-secret-key
-JWT_ACCESS_TOKEN_EXPIRES_IN=15m
-JWT_REFRESH_TOKEN_EXPIRES_IN=7d
+JWT_SECRET=your-super-secret-jwt-key
+JWT_EXPIRES_IN=1d
 
-# Security
-CORS_ENABLED=true
-HELMET_ENABLED=true
-RATE_LIMIT_ENABLED=true
+# 2FA
+TWO_FACTOR_SERVICE_NAME=Firefly III Clone
+TWO_FACTOR_ISSUER=firefly-clone
 ```
 
-### Database Setup
+### 4. Configurar base de datos
 
-For development, the application uses SQLite by default. For production:
+```bash
+# Crear base de datos
+createdb firefly_clone
 
-1. **Install PostgreSQL**
-2. **Create database**
-   ```sql
-   CREATE DATABASE firefly_iii_clone;
-   CREATE USER firefly WITH PASSWORD 'firefly';
-   GRANT ALL PRIVILEGES ON DATABASE firefly_iii_clone TO firefly;
-   ```
-3. **Update .env with PostgreSQL configuration**
-4. **Run migrations**
-   ```bash
-   npm run migration:run
-   ```
+# Ejecutar migraciones
+npm run migration:run
 
-## 📡 API Endpoints
+# (Opcional) Ejecutar seeds
+npm run seed
+```
 
-### Health Check
-- `GET /api/v1` - API status
-- `GET /api/v1/health` - Health check
+### 5. Iniciar el servidor
 
-### Authentication (Coming Soon)
-- `POST /api/v1/auth/login` - User login
-- `POST /api/v1/auth/register` - User registration
-- `POST /api/v1/auth/refresh` - Refresh token
-- `POST /api/v1/auth/logout` - User logout
+```bash
+# Desarrollo
+npm run start:dev
 
-### Users (Coming Soon)
-- `GET /api/v1/users/profile` - Get user profile
-- `PUT /api/v1/users/profile` - Update profile
-- `DELETE /api/v1/users/account` - Delete account
+# Producción
+npm run build
+npm run start:prod
+```
 
-### Accounts (Coming Soon)
-- `GET /api/v1/accounts` - List accounts
-- `POST /api/v1/accounts` - Create account
-- `GET /api/v1/accounts/:id` - Get account
-- `PUT /api/v1/accounts/:id` - Update account
-- `DELETE /api/v1/accounts/:id` - Delete account
+## 📚 Documentación de la API
 
-## 🏗️ Architecture
+### Swagger/OpenAPI
 
-### Design Patterns
-- **Clean Architecture** - Separation of concerns
-- **CQRS** - Command Query Responsibility Segregation
-- **Repository Pattern** - Data access abstraction
-- **Factory Pattern** - Object creation
-- **Observer Pattern** - Event handling
+Una vez que el servidor esté ejecutándose, la documentación interactiva estará disponible en:
 
-### Technologies
-- **NestJS 10+** - Node.js framework
-- **TypeScript** - Type safety
-- **TypeORM** - Database ORM
-- **PostgreSQL** - Primary database
-- **Redis** - Caching and sessions
-- **JWT** - Authentication
-- **Swagger** - API documentation
-- **Jest** - Testing framework
+- **Desarrollo**: http://localhost:3000/api/docs
+- **Producción**: https://your-domain.com/api/docs
+
+### Endpoints Principales
+
+#### 🔐 Autenticación
+
+```http
+POST /api/v1/auth/register    # Registro de usuario
+POST /api/v1/auth/login       # Inicio de sesión
+GET  /api/v1/auth/profile     # Perfil del usuario
+POST /api/v1/auth/2fa/setup   # Configurar 2FA
+POST /api/v1/auth/2fa/enable  # Habilitar 2FA
+POST /api/v1/auth/2fa/verify  # Verificar código 2FA
+```
+
+#### 💰 Cuentas
+
+```http
+POST   /api/v1/accounts           # Crear cuenta
+GET    /api/v1/accounts           # Listar cuentas
+GET    /api/v1/accounts/summary   # Resumen financiero
+GET    /api/v1/accounts/:id       # Detalles de cuenta
+PATCH  /api/v1/accounts/:id       # Actualizar cuenta
+DELETE /api/v1/accounts/:id       # Eliminar cuenta
+```
+
+#### 💸 Transacciones
+
+```http
+POST   /api/v1/transactions           # Crear transacción
+GET    /api/v1/transactions           # Listar transacciones
+GET    /api/v1/transactions/summary   # Resumen estadístico
+GET    /api/v1/transactions/:id       # Detalles de transacción
+PATCH  /api/v1/transactions/:id       # Actualizar transacción
+DELETE /api/v1/transactions/:id       # Eliminar transacción
+```
+
+### Autenticación
+
+Todos los endpoints (excepto registro y login) requieren autenticación JWT:
+
+```http
+Authorization: Bearer <your-jwt-token>
+```
+
+### Ejemplos de Uso
+
+#### Crear una cuenta
+
+```bash
+curl -X POST http://localhost:3000/api/v1/accounts \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Cuenta Corriente",
+    "type": "asset",
+    "currencyCode": "EUR",
+    "openingBalance": 1000.00
+  }'
+```
+
+#### Crear una transacción
+
+```bash
+curl -X POST http://localhost:3000/api/v1/transactions \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "withdrawal",
+    "description": "Compra en supermercado",
+    "date": "2023-12-01",
+    "splits": [
+      {
+        "sourceAccountId": "uuid-cuenta-origen",
+        "destinationAccountId": "uuid-cuenta-destino",
+        "amount": 45.60,
+        "description": "Groceries"
+      }
+    ]
+  }'
+```
 
 ## 🧪 Testing
 
+### Tests Unitarios
+
 ```bash
-# Unit tests
+# Ejecutar tests unitarios
 npm run test
 
-# Integration tests
-npm run test:e2e
-
-# Test coverage
+# Con coverage
 npm run test:cov
 
 # Watch mode
 npm run test:watch
 ```
 
-## 📚 API Documentation
+### Tests de Integración (E2E)
 
-When running in development mode, Swagger documentation is available at:
-- `http://localhost:3000/api/docs`
+```bash
+# Ejecutar tests e2e
+npm run test:e2e
 
-## 🔐 Security Features
+# Con base de datos de test
+NODE_ENV=test npm run test:e2e
+```
 
-- **Helmet** - Security headers
-- **CORS** - Cross-origin resource sharing
-- **Rate Limiting** - Request throttling
-- **Input Validation** - Request validation
-- **JWT Authentication** - Secure authentication
-- **Password Hashing** - bcrypt password protection
-- **SQL Injection Protection** - TypeORM query builder
+### Coverage
+
+Los reportes de coverage se generan en `./coverage/`:
+
+- `coverage/lcov-report/index.html` - Reporte HTML
+- `coverage/lcov.info` - Formato LCOV
+
+## 🏗️ Arquitectura
+
+### Estructura del Proyecto
+
+```
+src/
+├── auth/                 # Módulo de autenticación
+├── users/               # Gestión de usuarios
+├── accounts/            # Gestión de cuentas
+├── transactions/        # Gestión de transacciones
+├── common/              # Utilidades compartidas
+│   ├── config/         # Configuraciones
+│   ├── database/       # Setup de base de datos
+│   ├── decorators/     # Decorators personalizados
+│   ├── entities/       # Entidades base
+│   ├── guards/         # Guards de seguridad
+│   └── pipes/          # Pipes de validación
+└── main.ts             # Punto de entrada
+```
+
+### Principios de Diseño
+
+- **Clean Architecture**: Separación clara de responsabilidades
+- **Domain-Driven Design**: Modelado basado en el dominio del negocio
+- **SOLID Principles**: Código mantenible y extensible
+- **Repository Pattern**: Abstracción de acceso a datos
+- **Guard Pattern**: Seguridad por defecto
+
+## 🔧 Scripts Disponibles
+
+```bash
+# Desarrollo
+npm run start:dev         # Servidor en modo desarrollo
+npm run start:debug       # Servidor con debugging
+
+# Build
+npm run build            # Compilar para producción
+npm run start:prod       # Servidor en producción
+
+# Base de datos
+npm run migration:generate  # Generar nueva migración
+npm run migration:run      # Ejecutar migraciones
+npm run migration:revert   # Revertir última migración
+npm run seed              # Ejecutar seeds
+
+# Testing
+npm run test             # Tests unitarios
+npm run test:watch       # Tests en modo watch
+npm run test:cov         # Tests con coverage
+npm run test:e2e         # Tests de integración
+
+# Linting y formato
+npm run lint             # Ejecutar ESLint
+npm run format           # Formatear código con Prettier
+```
+
+## 🌍 Variables de Entorno
+
+### Aplicación
+- `NODE_ENV` - Entorno (development/production/test)
+- `APP_PORT` - Puerto del servidor (default: 3000)
+- `APP_NAME` - Nombre de la aplicación
+
+### Base de Datos
+- `DB_HOST` - Host de PostgreSQL
+- `DB_PORT` - Puerto de PostgreSQL (default: 5432)
+- `DB_USERNAME` - Usuario de base de datos
+- `DB_PASSWORD` - Contraseña de base de datos
+- `DB_DATABASE` - Nombre de la base de datos
+
+### Autenticación
+- `JWT_SECRET` - Clave secreta para JWT
+- `JWT_EXPIRES_IN` - Tiempo de expiración del token
+
+### 2FA
+- `TWO_FACTOR_SERVICE_NAME` - Nombre del servicio para 2FA
+- `TWO_FACTOR_ISSUER` - Emisor para códigos 2FA
 
 ## 🚀 Deployment
 
-### Docker (Recommended)
+### Docker
 
 ```bash
-# Build Docker image
-docker build -t firefly-backend .
+# Build imagen
+docker build -t firefly-clone-api .
 
-# Run with Docker Compose
+# Ejecutar contenedor
+docker run -p 3000:3000 \
+  -e DB_HOST=your-db-host \
+  -e DB_USERNAME=your-username \
+  -e DB_PASSWORD=your-password \
+  firefly-clone-api
+```
+
+### Docker Compose
+
+```bash
+# Levantar toda la aplicación
 docker-compose up -d
+
+# Solo la API
+docker-compose up api
 ```
 
-### Manual Deployment
+## 📊 Monitoreo y Logging
 
-```bash
-# Build for production
-npm run build
+- Logs estructurados con Winston
+- Métricas de performance
+- Health checks en `/health`
+- Prometheus metrics en `/metrics`
 
-# Start production server
-npm run start:prod
-```
+## 🤝 Contribución
 
-## 📈 Performance
+1. Fork del repositorio
+2. Crear rama para feature (`git checkout -b feature/nueva-funcionalidad`)
+3. Commit cambios (`git commit -am 'Add nueva funcionalidad'`)
+4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
+5. Crear Pull Request
 
-- **Caching** - Redis-based caching
-- **Database Optimization** - Indexes and query optimization
-- **Connection Pooling** - Efficient database connections
-- **Compression** - Response compression
-- **Monitoring** - Performance metrics
+### Estándares de Código
 
-## 🤝 Contributing
+- TypeScript estricto
+- ESLint + Prettier
+- Tests obligatorios para nuevas funcionalidades
+- Documentación actualizada
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+## 📄 Licencia
 
-## 📝 License
+Este proyecto está licenciado bajo la licencia AGPL-3.0 - ver el archivo [LICENSE](LICENSE) para más detalles.
 
-This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
+## 🆘 Soporte
 
-## 🆘 Support
+- **Issues**: [GitHub Issues](https://github.com/your-repo/issues)
+- **Documentación**: [API Docs](http://localhost:3000/api/docs)
+- **Email**: support@your-domain.com
 
-For support and questions:
-- Create an issue on GitHub
-- Check the [API Documentation](http://localhost:3000/api/docs)
-- Review the [Project Documentation](../README.md)
+## 📈 Roadmap
+
+- [ ] Sistema de categorías avanzado
+- [ ] Presupuestos y metas financieras
+- [ ] Importación de transacciones bancarias
+- [ ] Dashboard analytics avanzado
+- [ ] Aplicación móvil
+- [ ] Integración con bancos (PSD2)
+- [ ] Sistema de notificaciones
+- [ ] Multi-tenancy
