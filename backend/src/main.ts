@@ -2,8 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
+import compression from 'compression';
 
 import { AppModule } from './app.module';
+import { RequestValidationMiddleware } from './common/middleware/request-validation.middleware';
+import { RateLimitingMiddleware } from './common/middleware/rate-limiting.middleware';
+import { SecurityLoggingMiddleware } from './common/middleware/security-logging.middleware';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -15,6 +20,24 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.get<number>('app.port') || 3000;
   const nodeEnv = configService.get<string>('app.environment') || 'development';
+  
+  // Security middleware - aplicar primero
+  app.use(helmet({
+    contentSecurityPolicy: nodeEnv === 'production' ? undefined : false,
+    crossOriginEmbedderPolicy: false,
+  }));
+  
+  // Compression middleware
+  app.use(compression());
+  
+  // Security logging middleware
+  app.use(new SecurityLoggingMiddleware(configService).use.bind(new SecurityLoggingMiddleware(configService)));
+  
+  // Request validation middleware
+  app.use(new RequestValidationMiddleware().use.bind(new RequestValidationMiddleware()));
+  
+  // Rate limiting middleware
+  app.use(new RateLimitingMiddleware(configService).use.bind(new RateLimitingMiddleware(configService)));
   
   // Global prefix for all routes
   app.setGlobalPrefix('api/v1');
@@ -31,12 +54,25 @@ async function bootstrap() {
     }),
   );
 
-  // Basic CORS configuration
+  // Enhanced CORS configuration
   app.enableCors({
-    origin: configService.get<string>('app.frontend.url') || 'http://localhost:3001',
+    origin: nodeEnv === 'production'
+      ? configService.get<string>('app.frontend.url')
+      : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'Origin',
+      'X-Requested-With',
+      'Access-Control-Allow-Headers',
+      'Access-Control-Allow-Origin',
+      'Access-Control-Allow-Methods'
+    ],
+    exposedHeaders: ['X-Total-Count', 'X-Rate-Limit-Remaining'],
+    maxAge: 86400, // 24 hours preflight cache
   });
 
   // Swagger/OpenAPI Documentation
@@ -113,7 +149,9 @@ async function bootstrap() {
       .addTag('users', '👥 Gestión de usuarios')
       .addTag('accounts', '💰 Gestión de cuentas financieras')
       .addTag('transactions', '💸 Gestión de transacciones')
-      .addTag('reports', '📊 Reportes y estadísticas')
+      .addTag('categories', '🗂️ Gestión de categorías')
+      .addTag('dashboard', '📊 Dashboard y análisis financiero')
+      .addTag('Health', '🏥 Health checks y monitoreo del sistema')
       .build();
 
     const document = SwaggerModule.createDocument(app, config, {
