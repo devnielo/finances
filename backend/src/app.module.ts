@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 
 // Controllers
 import { AppController } from './app.controller';
@@ -10,6 +11,10 @@ import { CommonModule } from './common/common.module';
 
 // Feature modules
 import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
+
+// Guards
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 // Configuration
 import databaseConfig from './common/config/database.config';
@@ -34,9 +39,16 @@ import cacheConfig from './common/config/cache.config';
     CommonModule,
 
     // Feature modules
+    AuthModule,
     UsersModule,
   ],
   controllers: [AppController],
-  providers: [],
+  providers: [
+    // Global JWT guard - all endpoints protected by default
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

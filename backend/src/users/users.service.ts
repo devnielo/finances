@@ -192,6 +192,16 @@ export class UsersService {
     await this.userRepository.save(user);
   }
 
+  async updateTwoFactorSecret(id: string, secret: string): Promise<void> {
+    const user = await this.findOne(id);
+    user.twoFactorSecret = secret;
+    await this.userRepository.save(user);
+  }
+
+  async findByEmailWithPassword(email: string): Promise<User | null> {
+    return this.findByEmail(email); // Ya incluye password
+  }
+
   async useRecoveryCode(id: string, code: string): Promise<boolean> {
     const user = await this.userRepository.findOne({
       where: { id },
