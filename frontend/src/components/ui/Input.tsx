@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 
 interface InputProps {
   label?: string;
-  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url';
+  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'date';
   placeholder?: string;
   value?: string | number;
   defaultValue?: string | number;
