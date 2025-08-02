@@ -20,12 +20,12 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Card, { CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card';
 import { loginSchema, type LoginFormData } from '@/lib/validations/auth';
-import { useAuthActions } from '@/stores/authStore';
+import { useLogin } from '@/stores/authStore';
 import { cn } from '@/lib/utils';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuthActions();
+  const login = useLogin();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);

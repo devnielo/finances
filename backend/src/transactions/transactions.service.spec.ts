@@ -141,6 +141,8 @@ describe('TransactionsService', () => {
       // Arrange
       jest.spyOn(accountsService, 'findOne')
         .mockResolvedValueOnce(mockAssetAccount as any)
+        .mockResolvedValueOnce(mockExpenseAccount as any)
+        .mockResolvedValueOnce(mockAssetAccount as any)
         .mockResolvedValueOnce(mockExpenseAccount as any);
 
       mockQueryRunner.manager.create
@@ -161,12 +163,14 @@ describe('TransactionsService', () => {
       expect(mockQueryRunner.startTransaction).toHaveBeenCalled();
       expect(mockQueryRunner.commitTransaction).toHaveBeenCalled();
       expect(mockQueryRunner.release).toHaveBeenCalled();
-      expect(accountsService.findOne).toHaveBeenCalledTimes(2);
+      expect(accountsService.findOne).toHaveBeenCalledTimes(4);
     });
 
     it('should rollback transaction on error', async () => {
       // Arrange
       jest.spyOn(accountsService, 'findOne')
+        .mockResolvedValueOnce(mockAssetAccount as any)
+        .mockResolvedValueOnce(mockExpenseAccount as any)
         .mockResolvedValueOnce(mockAssetAccount as any)
         .mockResolvedValueOnce(mockExpenseAccount as any);
 
@@ -194,6 +198,8 @@ describe('TransactionsService', () => {
       };
 
       jest.spyOn(accountsService, 'findOne')
+        .mockResolvedValueOnce(mockExpenseAccount as any)
+        .mockResolvedValueOnce(mockAssetAccount as any)
         .mockResolvedValueOnce(mockExpenseAccount as any)
         .mockResolvedValueOnce(mockAssetAccount as any);
 

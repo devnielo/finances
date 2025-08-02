@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { queryClient } from '@/lib/react-query';
-import { useAuthActions } from '@/stores/authStore';
+import { useRefreshAuth } from '@/stores/authStore';
 import { apiClient } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
 
@@ -21,7 +21,7 @@ interface LayoutProps {
 export default function Layout({ children, title, subtitle, className }: LayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { refreshAuth } = useAuthActions();
+  const refreshAuth = useRefreshAuth();
 
   // Inicializar autenticación al cargar la aplicación
   useEffect(() => {

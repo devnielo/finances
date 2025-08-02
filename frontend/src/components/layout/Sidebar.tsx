@@ -21,7 +21,7 @@ import {
   PiggyBank,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAuth, useAuthActions } from '@/stores/authStore';
+import { useUser, useLogout } from '@/stores/authStore';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -90,8 +90,8 @@ const secondaryItems = [
 
 export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const pathname = usePathname();
-  const { user } = useAuth();
-  const { logout } = useAuthActions();
+  const user = useUser();
+  const logout = useLogout();
 
   const handleLogout = () => {
     logout();

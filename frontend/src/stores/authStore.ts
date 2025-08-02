@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, subscribeWithSelector } from 'zustand/middleware';
 import { User, AuthTokens, LoginCredentials, RegisterCredentials } from '@/types';
 import { apiClient } from '@/lib/api/client';
+import { useMemo } from 'react';
 
 interface AuthState {
   user: User | null;
@@ -20,8 +21,9 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>()(
-  persist(
-    (set, get) => ({
+  subscribeWithSelector(
+    persist(
+      (set, get) => ({
       user: null,
       isAuthenticated: false,
       isLoading: false,
@@ -182,31 +184,77 @@ export const useAuthStore = create<AuthState>()(
       setUser: (user: User) => {
         set({ user });
       },
-    }),
-    {
-      name: 'auth-store',
-      partialize: (state) => ({
-        user: state.user,
-        isAuthenticated: state.isAuthenticated,
       }),
-    }
+      {
+        name: 'auth-store',
+        partialize: (state) => ({
+          user: state.user,
+          isAuthenticated: state.isAuthenticated,
+        }),
+        // Mejorar la hidratación para SSR
+        onRehydrateStorage: () => (state) => {
+          if (state) {
+            // Restaurar el token en el cliente API después de la hidratación
+            const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+            if (token && state.isAuthenticated) {
+              apiClient.setAccessToken(token);
+            }
+          }
+        },
+      }
+    )
   )
 );
 
-// Selector hooks para un mejor rendimiento
-export const useAuth = () => useAuthStore((state) => ({
-  user: state.user,
-  isAuthenticated: state.isAuthenticated,
-  isLoading: state.isLoading,
-  error: state.error,
-}));
+// Selector hooks estables para evitar loops infinitos
+const userSelector = (state: AuthState) => state.user;
+const isAuthenticatedSelector = (state: AuthState) => state.isAuthenticated;
+const isLoadingSelector = (state: AuthState) => state.isLoading;
+const errorSelector = (state: AuthState) => state.error;
 
-export const useAuthActions = () => useAuthStore((state) => ({
-  login: state.login,
-  register: state.register,
-  logout: state.logout,
-  verifyTwoFactor: state.verifyTwoFactor,
-  refreshAuth: state.refreshAuth,
-  clearError: state.clearError,
-  setUser: state.setUser,
-}));
+// Hook optimizado que evita recrear objetos
+export const useAuth = () => {
+  const user = useAuthStore(userSelector);
+  const isAuthenticated = useAuthStore(isAuthenticatedSelector);
+  const isLoading = useAuthStore(isLoadingSelector);
+  const error = useAuthStore(errorSelector);
+
+  return useMemo(
+    () => ({
+      user,
+      isAuthenticated,
+      isLoading,
+      error,
+    }),
+    [user, isAuthenticated, isLoading, error]
+  );
+};
+
+// Hooks individuales para un mejor rendimiento
+export const useUser = () => useAuthStore(userSelector);
+export const useIsAuthenticated = () => useAuthStore(isAuthenticatedSelector);
+export const useAuthLoading = () => useAuthStore(isLoadingSelector);
+export const useAuthError = () => useAuthStore(errorSelector);
+
+// Selector hooks para acciones - usando memoización estable
+export const useAuthActions = () => {
+  return useMemo(() => {
+    const store = useAuthStore.getState();
+    return {
+      login: store.login,
+      register: store.register,
+      logout: store.logout,
+      verifyTwoFactor: store.verifyTwoFactor,
+      refreshAuth: store.refreshAuth,
+      clearError: store.clearError,
+      setUser: store.setUser,
+    };
+  }, []);
+};
+
+// Hooks individuales para un mejor rendimiento
+export const useLogin = () => useAuthStore((state) => state.login);
+export const useRegister = () => useAuthStore((state) => state.register);
+export const useLogout = () => useAuthStore((state) => state.logout);
+export const useRefreshAuth = () => useAuthStore((state) => state.refreshAuth);
+export const useClearError = () => useAuthStore((state) => state.clearError);

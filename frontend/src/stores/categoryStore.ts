@@ -8,7 +8,8 @@ import {
   CategoryStats,
   CategoryTreeNode,
   MoveCategoryData,
-  SortCategoriesData
+  SortCategoriesData,
+  CategoryReorderData
 } from '@/types';
 import { apiClient } from '@/lib/api/client';
 
@@ -34,6 +35,7 @@ interface CategoryState {
   deleteCategory: (id: string) => Promise<void>;
   moveCategory: (data: MoveCategoryData) => Promise<void>;
   sortCategories: (data: SortCategoriesData) => Promise<void>;
+  reorderCategoriesDragDrop: (data: CategoryReorderData) => Promise<void>;
   searchCategories: (query: string) => Promise<Category[]>;
   
   // Filter and utility actions
@@ -273,6 +275,32 @@ export const useCategoryStore = create<CategoryState>()(
             await get().fetchCategories();
           } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Error al ordenar categorías';
+            set({ error: errorMessage, loading: false });
+            throw new Error(errorMessage);
+          }
+        },
+
+        // Reorder categories with drag & drop
+        reorderCategoriesDragDrop: async (data: CategoryReorderData) => {
+          set({ loading: true, error: null });
+          try {
+            const { draggedCategoryId, targetCategoryId, position, newParentId, newOrder } = data;
+            
+            // Update the dragged category
+            const updateData: { order: number; parentId?: string } = { order: newOrder };
+            if (newParentId !== undefined) {
+              updateData.parentId = newParentId;
+            }
+            
+            await apiClient.patch(`/categories/${draggedCategoryId}`, updateData);
+            
+            // If we need to update other categories' orders, do it here
+            // This might be needed if we're inserting between existing categories
+            
+            // Refresh categories to get the updated tree
+            await get().fetchCategories();
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Error al reordenar categorías';
             set({ error: errorMessage, loading: false });
             throw new Error(errorMessage);
           }

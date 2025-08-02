@@ -26,6 +26,7 @@ export default function CategoriesPage() {
     setFilters,
     clearFilters,
     toggleCategoryExpansion,
+    reorderCategoriesDragDrop,
   } = useCategoryStore();
 
   const [viewMode, setViewMode] = useState<ViewMode>('tree');
@@ -218,7 +219,9 @@ export default function CategoriesPage() {
               // Handle toggle active state
               console.log('Toggle active for:', node.name);
             }}
+            onReorderCategories={reorderCategoriesDragDrop}
             showActions={true}
+            enableDragDrop={true}
           />
         </Card>
       )}

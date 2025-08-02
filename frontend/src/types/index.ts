@@ -203,6 +203,28 @@ export interface SortCategoriesData {
   categories: { id: string; order: number }[];
 }
 
+// Drag & Drop Types
+export interface DragDropNode {
+  id: string;
+  type: 'category';
+  data: CategoryTreeNode;
+}
+
+export interface DragDropContext {
+  activeId: string | null;
+  overId: string | null;
+  draggedNode: CategoryTreeNode | null;
+  dropPosition: 'before' | 'after' | 'inside' | null;
+}
+
+export interface CategoryReorderData {
+  draggedCategoryId: string;
+  targetCategoryId: string;
+  position: 'before' | 'after' | 'inside';
+  newParentId?: string;
+  newOrder: number;
+}
+
 // Dashboard Types
 export interface DashboardMetrics {
   totalBalance: number;

@@ -19,12 +19,12 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Card, { CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card';
 import { registerSchema, type RegisterFormData } from '@/lib/validations/auth';
-import { useAuthActions } from '@/stores/authStore';
+import { useRegister } from '@/stores/authStore';
 import { cn } from '@/lib/utils';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register: registerUser } = useAuthActions();
+  const registerUser = useRegister();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
