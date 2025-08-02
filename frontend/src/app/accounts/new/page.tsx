@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
@@ -66,7 +66,7 @@ export default function NewAccountPage() {
     setValue,
     formState: { errors, isValid },
   } = useForm<CreateAccountFormData>({
-    resolver: zodResolver(createAccountSchema),
+    resolver: zodResolver(createAccountSchema) as Resolver<CreateAccountFormData>,
     defaultValues: {
       name: '',
       type: AccountType.ASSET,

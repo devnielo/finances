@@ -28,23 +28,38 @@ export default function Card({
   padding = 'md',
   onClick 
 }: CardProps) {
-  const Component = onClick ? motion.div : 'div';
+  // Si necesita animaciones o click, usa motion.div
+  if (onClick || hover) {
+    return (
+      <motion.div
+        onClick={onClick}
+        whileHover={hover ? { y: -2, scale: 1.01 } : {}}
+        transition={{ duration: 0.2 }}
+        className={cn(
+          'bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm',
+          hover && 'hover:shadow-md cursor-pointer',
+          purple && 'bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-purple-200 dark:border-purple-700',
+          paddingClasses[padding],
+          className
+        )}
+      >
+        {children}
+      </motion.div>
+    );
+  }
   
+  // Para casos estáticos, usa div normal
   return (
-    <Component
-      onClick={onClick}
-      whileHover={hover ? { y: -2, scale: 1.01 } : {}}
-      transition={{ duration: 0.2 }}
+    <div
       className={cn(
-        'card',
-        hover && 'card-hover cursor-pointer',
-        purple && 'card-purple',
+        'bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm',
+        purple && 'bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-purple-200 dark:border-purple-700',
         paddingClasses[padding],
         className
       )}
     >
       {children}
-    </Component>
+    </div>
   );
 }
 

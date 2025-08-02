@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
@@ -31,6 +31,7 @@ import Select from '@/components/ui/Select';
 import { ConfirmModal, useModal } from '@/components/ui/Modal';
 import { useTransactions, useTransactionActions, useTransactionStats } from '@/stores/transactionStore';
 import { useAccounts } from '@/stores/accountStore';
+import { useCategoryStore } from '@/stores/categoryStore';
 import { TransactionType } from '@/types';
 import { 
   formatTransactionAmount,
@@ -61,19 +62,21 @@ const limitOptions = [
   { value: '100', label: '100 por página' },
 ];
 
-export default function TransactionsPage() {
+function TransactionsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
   const { transactions, isLoading, error, currentPage, totalPages, totalTransactions, filters } = useTransactions();
   const { fetchTransactions, deleteTransaction, setFilters, clearFilters, reconcileTransaction } = useTransactionActions();
   const { accounts } = useAccounts();
+  const { categories, fetchCategories } = useCategoryStore();
   const stats = useTransactionStats();
   
   // Estados para filtros
   const [searchTerm, setSearchTerm] = useState(filters.search || '');
   const [selectedType, setSelectedType] = useState(filters.type || '');
   const [selectedAccount, setSelectedAccount] = useState(filters.accountId || '');
+  const [selectedCategory, setSelectedCategory] = useState(filters.categoryId || '');
   const [startDate, setStartDate] = useState(filters.startDate || '');
   const [endDate, setEndDate] = useState(filters.endDate || '');
   const [sortBy, setSortBy] = useState('date');
@@ -85,6 +88,11 @@ export default function TransactionsPage() {
   const deleteModal = useModal();
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   const [isDeletingTransaction, setIsDeletingTransaction] = useState(false);
+
+  // Cargar categorías al montar el componente
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   // Cargar transacciones al montar y cuando cambien los filtros
   useEffect(() => {
@@ -99,6 +107,7 @@ export default function TransactionsPage() {
       search: searchTerm || undefined,
       type: (selectedType as TransactionType) || undefined,
       accountId: selectedAccount || undefined,
+      categoryId: selectedCategory || undefined,
       startDate: startDate || undefined,
       endDate: endDate || undefined,
       sortBy: sortBy as 'date' | 'amount' | 'description' | 'createdAt',
@@ -109,7 +118,7 @@ export default function TransactionsPage() {
     };
 
     fetchTransactions(newFilters).catch(console.error);
-  }, [searchTerm, selectedType, selectedAccount, startDate, endDate, sortBy, sortOrder, currentPage, pageSize, reconciledFilter, fetchTransactions]);
+  }, [searchTerm, selectedType, selectedAccount, selectedCategory, startDate, endDate, sortBy, sortOrder, currentPage, pageSize, reconciledFilter, fetchTransactions]);
 
   // Opciones de cuentas para el filtro
   const accountOptions = [
@@ -119,6 +128,38 @@ export default function TransactionsPage() {
       label: account.name,
     })),
   ];
+
+  // Opciones de categorías para el filtro
+  const getCategoryOptions = () => {
+    const activeCategories = categories.filter(cat => cat.active);
+    
+    // Crear opciones jerárquicas
+    const buildCategoryTree = (parentId: string | null = null, level: number = 0): Array<{value: string; label: string}> => {
+      const children = activeCategories.filter(cat => cat.parentId === parentId);
+      const options: Array<{value: string; label: string}> = [];
+      
+      children.forEach(category => {
+        const indent = '  '.repeat(level);
+        options.push({
+          value: category.id,
+          label: `${indent}${category.name}`,
+        });
+        
+        // Añadir subcategorías
+        options.push(...buildCategoryTree(category.id, level + 1));
+      });
+      
+      return options;
+    };
+
+    return [
+      { value: '', label: 'Todas las categorías' },
+      { value: 'uncategorized', label: 'Sin categoría' },
+      ...buildCategoryTree(),
+    ];
+  };
+
+  const categoryOptions = getCategoryOptions();
 
   const reconciledOptions = [
     { value: '', label: 'Todas' },
@@ -283,13 +324,20 @@ export default function TransactionsPage() {
               />
             </div>
 
-            {/* Fila 2: Cuenta y estado */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Fila 2: Cuenta, categoría y estado */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Select
                 options={accountOptions}
                 value={selectedAccount}
                 onChange={setSelectedAccount}
                 placeholder="Cuenta"
+              />
+              
+              <Select
+                options={categoryOptions}
+                value={selectedCategory}
+                onChange={setSelectedCategory}
+                placeholder="Categoría"
               />
               
               <Select
@@ -565,3 +613,14 @@ export default function TransactionsPage() {
     </Layout>
   );
 }
+
+// Wrapper con Suspense para useSearchParams
+function TransactionsPageWrapper() {
+  return (
+    <Suspense fallback={<div>Cargando...</div>}>
+      <TransactionsPage />
+    </Suspense>
+  );
+}
+
+export default TransactionsPageWrapper;

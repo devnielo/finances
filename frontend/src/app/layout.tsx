@@ -1,14 +1,23 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
+
+/**
+ * Migración a Next.js 15: mover viewport/themeColor/colorScheme a la exportación `viewport`
+ * https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#8b5cf6",
+  colorScheme: "dark",
+};
 
 export const metadata: Metadata = {
   title: "FinanceApp - Gestión Financiera Personal",
-  description: "Aplicación moderna para gestionar tus finanzas personales con estilo inspirado en Spotify",
+  description:
+    "Aplicación moderna para gestionar tus finanzas personales con estilo inspirado en Spotify",
   keywords: ["finanzas", "gestión financiera", "presupuesto", "transacciones", "cuentas"],
   authors: [{ name: "FinanceApp Team" }],
-  viewport: "width=device-width, initial-scale=1",
-  themeColor: "#8b5cf6",
-  colorScheme: "dark",
   robots: "index, follow",
   openGraph: {
     title: "FinanceApp - Gestión Financiera Personal",
@@ -35,39 +44,30 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className="dark">
+    <html lang="es" className="dark" suppressHydrationWarning>
       <head>
-        {/* Preload critical fonts */}
+        {/* Load Google Fonts */}
         <link
-          rel="preload"
+          rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-          as="style"
         />
         <link
-          rel="preload"
+          rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"
-          as="style"
         />
-        
-        {/* Critical CSS for fonts */}
-        <style dangerouslySetInnerHTML={{
-          __html: `
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-            @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
-          `
-        }} />
-        
+
         {/* PWA and mobile optimization */}
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="FinanceApp" />
-        
+
         {/* Performance and security */}
         <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
-        <meta httpEquiv="X-Frame-Options" content="DENY" />
+        {/* X-Frame-Options debe ir por cabecera HTTP; se elimina para evitar warnings en cliente */}
+        {/* <meta httpEquiv="X-Frame-Options" content="DENY" /> */}
         <meta httpEquiv="X-XSS-Protection" content="1; mode=block" />
-        
+
         {/* DNS prefetch for external resources */}
         <link rel="dns-prefetch" href="//fonts.googleapis.com" />
         <link rel="dns-prefetch" href="//fonts.gstatic.com" />
@@ -80,12 +80,10 @@ export default function RootLayout({
               <div className="w-16 h-16 bg-gradient-to-br from-accent-primary to-accent-secondary rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <span className="text-white text-2xl font-bold">F</span>
               </div>
-              <h1 className="text-2xl font-bold text-text-primary mb-2">
-                JavaScript Requerido
-              </h1>
+              <h1 className="text-2xl font-bold text-text-primary mb-2">JavaScript Requerido</h1>
               <p className="text-text-muted">
-                FinanceApp requiere JavaScript para funcionar correctamente. 
-                Por favor, habilita JavaScript en tu navegador e intenta nuevamente.
+                FinanceApp requiere JavaScript para funcionar correctamente. Por favor, habilita
+                JavaScript en tu navegador e intenta nuevamente.
               </p>
             </div>
           </div>
@@ -100,24 +98,7 @@ export default function RootLayout({
         <div id="portal-root" />
 
         {/* Performance monitoring script (solo en producción) */}
-        {process.env.NODE_ENV === 'production' && (
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-                // Web Vitals monitoring
-                if ('web-vitals' in window) {
-                  import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
-                    getCLS(console.log);
-                    getFID(console.log);
-                    getFCP(console.log);
-                    getLCP(console.log);
-                    getTTFB(console.log);
-                  });
-                }
-              `
-            }}
-          />
-        )}
+        {process.env.NODE_ENV === "production" && <script src="/performance-monitor.js" async />}
       </body>
     </html>
   );

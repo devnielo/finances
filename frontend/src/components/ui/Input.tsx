@@ -23,9 +23,9 @@ interface InputProps {
   name?: string;
   id?: string;
   autoComplete?: string;
-  min?: number;
-  max?: number;
-  step?: number;
+  min?: number | string;
+  max?: number | string;
+  step?: number | string;
   'aria-label'?: string;
 }
 

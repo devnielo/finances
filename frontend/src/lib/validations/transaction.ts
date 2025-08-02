@@ -57,8 +57,7 @@ export const createTransactionSchema = z.object({
   tags: z
     .array(z.string().trim().min(1))
     .max(10, 'Máximo 10 etiquetas permitidas')
-    .optional()
-    .default([]),
+    .optional(),
 }).refine((data) => {
   // Validar que las cuentas origen y destino sean diferentes en transferencias
   if (data.type === TransactionType.TRANSFER) {

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, X } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
@@ -11,6 +11,7 @@ import Button from '@/components/ui/Button';
 import Select from '@/components/ui/Select';
 import { useTransactionActions } from '@/stores/transactionStore';
 import { useAccounts } from '@/stores/accountStore';
+import { useCategoryStore } from '@/stores/categoryStore';
 import { Transaction, TransactionType, AccountType } from '@/types';
 import { 
   updateTransactionSchema, 
@@ -45,6 +46,7 @@ export default function EditTransactionPage() {
   
   const { updateTransaction, getTransactionById } = useTransactionActions();
   const { accounts } = useAccounts();
+  const { categories, fetchCategories } = useCategoryStore();
   const [transaction, setTransaction] = useState<Transaction | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -60,13 +62,18 @@ export default function EditTransactionPage() {
     reset,
     formState: { errors, isValid, isDirty },
   } = useForm<UpdateTransactionFormData>({
-    resolver: zodResolver(updateTransactionSchema),
+    resolver: zodResolver(updateTransactionSchema) as Resolver<UpdateTransactionFormData>,
     mode: 'onChange',
   });
 
   const watchedType = watch('type');
   const watchedSourceAccount = watch('sourceAccountId');
   const watchedDestinationAccount = watch('destinationAccountId');
+
+  // Cargar categorías al montar el componente
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   // Cargar datos de la transacción
   useEffect(() => {
@@ -203,6 +210,43 @@ export default function EditTransactionPage() {
     const account = accounts.find(acc => acc.id === accountId);
     return account?.currency || 'EUR';
   };
+
+  // Preparar opciones de categorías para el select
+  const getCategoryOptions = () => {
+    const activeCategories = categories.filter(cat => cat.active);
+    
+    // Crear opciones jerárquicas
+    const buildCategoryTree = (parentId: string | null = null, level: number = 0): Array<{value: string; label: string; icon?: React.ReactNode}> => {
+      const children = activeCategories.filter(cat => cat.parentId === parentId);
+      const options: Array<{value: string; label: string; icon?: React.ReactNode}> = [];
+      
+      children.forEach(category => {
+        const indent = '  '.repeat(level);
+        options.push({
+          value: category.id,
+          label: `${indent}${category.name}`,
+          icon: category.color ? (
+            <div
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: category.color }}
+            />
+          ) : undefined,
+        });
+        
+        // Añadir subcategorías
+        options.push(...buildCategoryTree(category.id, level + 1));
+      });
+      
+      return options;
+    };
+
+    return [
+      { value: '', label: 'Sin categoría' },
+      ...buildCategoryTree(),
+    ];
+  };
+
+  const categoryOptions = getCategoryOptions();
 
   // Validar que las cuentas tengan la misma moneda en transferencias
   const currencyMismatch = watchedType === TransactionType.TRANSFER &&
@@ -388,6 +432,36 @@ export default function EditTransactionPage() {
                   </p>
                 </div>
               )}
+            </div>
+          </Card>
+
+          {/* Categorización */}
+          <Card>
+            <div className="space-y-6">
+              <h2 className="text-lg font-semibold text-text-primary">Categorización</h2>
+              
+              {/* Selector de categoría */}
+              <Controller
+                name="categoryId"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    label="Categoría"
+                    options={categoryOptions}
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                    error={errors.categoryId?.message}
+                    placeholder="Selecciona una categoría..."
+                  />
+                )}
+              />
+              
+              <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-md">
+                <p className="text-sm text-blue-400">
+                  💡 Las categorías te ayudan a organizar y analizar tus gastos e ingresos.
+                  Puedes crear nuevas categorías desde el menú de Categorías.
+                </p>
+              </div>
             </div>
           </Card>
 

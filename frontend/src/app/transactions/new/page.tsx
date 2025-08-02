@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, Plus, X } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
@@ -12,6 +12,7 @@ import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import { useTransactionActions } from '@/stores/transactionStore';
 import { useAccounts } from '@/stores/accountStore';
+import { useCategoryStore } from '@/stores/categoryStore';
 import { TransactionType, AccountType } from '@/types';
 import { 
   createTransactionSchema, 
@@ -40,11 +41,12 @@ const transactionTypeOptions = [
   },
 ];
 
-export default function NewTransactionPage() {
+function NewTransactionPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { createTransaction } = useTransactionActions();
   const { accounts } = useAccounts();
+  const { categories, fetchCategories } = useCategoryStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
@@ -57,7 +59,7 @@ export default function NewTransactionPage() {
     control,
     formState: { errors, isValid },
   } = useForm<CreateTransactionFormData>({
-    resolver: zodResolver(createTransactionSchema),
+    resolver: zodResolver(createTransactionSchema) as Resolver<CreateTransactionFormData>,
     defaultValues: {
       amount: 0,
       description: '',
@@ -86,6 +88,11 @@ export default function NewTransactionPage() {
       }
     }
   }, [searchParams, accounts, setValue]);
+
+  // Cargar categorías al montar el componente
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   // Filtrar cuentas según el tipo de transacción
   const getAccountOptions = (forDestination = false) => {
@@ -193,6 +200,43 @@ export default function NewTransactionPage() {
     const account = accounts.find(acc => acc.id === accountId);
     return account?.currency || 'EUR';
   };
+
+  // Preparar opciones de categorías para el select
+  const getCategoryOptions = () => {
+    const activeCategories = categories.filter(cat => cat.active);
+    
+    // Crear opciones jerárquicas
+    const buildCategoryTree = (parentId: string | null = null, level: number = 0): Array<{value: string; label: string; icon?: React.ReactNode}> => {
+      const children = activeCategories.filter(cat => cat.parentId === parentId);
+      const options: Array<{value: string; label: string; icon?: React.ReactNode}> = [];
+      
+      children.forEach(category => {
+        const indent = '  '.repeat(level);
+        options.push({
+          value: category.id,
+          label: `${indent}${category.name}`,
+          icon: category.color ? (
+            <div
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: category.color }}
+            />
+          ) : undefined,
+        });
+        
+        // Añadir subcategorías
+        options.push(...buildCategoryTree(category.id, level + 1));
+      });
+      
+      return options;
+    };
+
+    return [
+      { value: '', label: 'Sin categoría' },
+      ...buildCategoryTree(),
+    ];
+  };
+
+  const categoryOptions = getCategoryOptions();
 
   // Validar que las cuentas tengan la misma moneda en transferencias
   const currencyMismatch = watchedType === TransactionType.TRANSFER &&
@@ -353,6 +397,36 @@ export default function NewTransactionPage() {
             </div>
           </Card>
 
+          {/* Categorización */}
+          <Card>
+            <div className="space-y-6">
+              <h2 className="text-lg font-semibold text-text-primary">Categorización</h2>
+              
+              {/* Selector de categoría */}
+              <Controller
+                name="categoryId"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    label="Categoría"
+                    options={categoryOptions}
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                    error={errors.categoryId?.message}
+                    placeholder="Selecciona una categoría..."
+                  />
+                )}
+              />
+              
+              <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-md">
+                <p className="text-sm text-blue-400">
+                  💡 Las categorías te ayudan a organizar y analizar tus gastos e ingresos.
+                  Puedes crear nuevas categorías desde el menú de Categorías.
+                </p>
+              </div>
+            </div>
+          </Card>
+
           <Card>
             <div className="space-y-6">
               <h2 className="text-lg font-semibold text-text-primary">Información Adicional</h2>
@@ -369,13 +443,13 @@ export default function NewTransactionPage() {
                     {tags.map((tag) => (
                       <span
                         key={tag}
-                        className="inline-flex items-center px-2 py-1 rounded-md bg-accent-primary/10 text-accent-primary text-sm"
+                        className="inline-flex items-center px-2 py-1 rounded-md bg-blue-100 text-blue-600 text-sm"
                       >
                         {tag}
                         <button
                           type="button"
                           onClick={() => handleRemoveTag(tag)}
-                          className="ml-1 hover:text-accent-secondary"
+                          className="ml-1 hover:text-blue-700"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -393,7 +467,7 @@ export default function NewTransactionPage() {
                   disabled={tags.length >= 10}
                   className="w-full px-3 py-2 border border-border-primary rounded-md 
                            bg-surface-primary text-text-primary
-                           focus:ring-2 focus:ring-accent-primary focus:border-accent-primary
+                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                            disabled:opacity-50"
                 />
                 <p className="text-xs text-text-muted">
@@ -409,7 +483,7 @@ export default function NewTransactionPage() {
                 <textarea
                   className="w-full px-3 py-2 border border-border-primary rounded-md 
                            bg-surface-primary text-text-primary
-                           focus:ring-2 focus:ring-accent-primary focus:border-accent-primary
+                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                            resize-vertical min-h-[100px]"
                   placeholder="Información adicional sobre esta transacción..."
                   {...register('notes')}
@@ -442,9 +516,9 @@ export default function NewTransactionPage() {
         </form>
 
         {/* Información de ayuda */}
-        <Card className="bg-accent-primary/5 border-accent-primary/20">
+        <Card className="bg-blue-50 border-blue-200">
           <div className="space-y-3">
-            <h3 className="font-medium text-accent-primary">💡 Consejos</h3>
+            <h3 className="font-medium text-blue-600">💡 Consejos</h3>
             <ul className="text-sm text-text-secondary space-y-1">
               <li>• <strong>Depósitos</strong>: Para registrar ingresos o dinero que entra</li>
               <li>• <strong>Retiros</strong>: Para registrar gastos o dinero que sale</li>
@@ -458,3 +532,14 @@ export default function NewTransactionPage() {
     </Layout>
   );
 }
+
+// Wrapper con Suspense para useSearchParams
+function NewTransactionPageWrapper() {
+  return (
+    <Suspense fallback={<div>Cargando...</div>}>
+      <NewTransactionPage />
+    </Suspense>
+  );
+}
+
+export default NewTransactionPageWrapper;

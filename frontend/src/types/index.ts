@@ -125,21 +125,82 @@ export interface TransactionFilters {
 export interface Category {
   id: string;
   name: string;
+  description?: string;
   icon?: string;
   color?: string;
+  active: boolean;
+  order: number;
   parentId?: string;
   userId: string;
   createdAt: string;
   updatedAt: string;
   children?: Category[];
   parent?: Category;
+  transactions?: Transaction[];
+  metadata?: CategoryMetadata;
+  // Virtual fields
+  fullName?: string;
+  isRootCategory?: boolean;
+  hasChildren?: boolean;
+  depth?: number;
+}
+
+export interface CategoryMetadata {
+  budgetLimit?: number;
+  budgetPeriod?: 'monthly' | 'quarterly' | 'yearly';
+  alertThreshold?: number;
+  tags?: string[];
+  keywords?: string[];
 }
 
 export interface CreateCategoryData {
   name: string;
+  description?: string;
   icon?: string;
   color?: string;
   parentId?: string;
+}
+
+export interface UpdateCategoryData {
+  name?: string;
+  description?: string;
+  icon?: string;
+  color?: string;
+  parentId?: string;
+  active?: boolean;
+  order?: number;
+  metadata?: CategoryMetadata;
+}
+
+export interface CategoryFilters {
+  search?: string;
+  parentId?: string;
+  hasParent?: boolean;
+  active?: boolean;
+  page?: number;
+  limit?: number;
+}
+
+export interface CategoryStats {
+  category: Category;
+  transactionCount: number;
+  totalAmount: number;
+  subcategoryCount: number;
+}
+
+export interface CategoryTreeNode extends Category {
+  children: CategoryTreeNode[];
+  level: number;
+  expanded?: boolean;
+}
+
+export interface MoveCategoryData {
+  categoryId: string;
+  newParentId?: string;
+}
+
+export interface SortCategoriesData {
+  categories: { id: string; order: number }[];
 }
 
 // Dashboard Types
