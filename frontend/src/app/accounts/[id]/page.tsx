@@ -18,8 +18,8 @@ import {
   MoreVertical,
 } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
-import Card, { CardHeader, CardTitle, CardContent, TransactionCard } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
+import { Card, CardHeader, CardTitle, CardContent, TransactionCard } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { ConfirmModal, useModal } from '@/components/ui/Modal';
 import { useAccountActions, useAccounts } from '@/stores/accountStore';
 import { Account, Transaction, TransactionType } from '@/types';

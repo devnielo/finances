@@ -18,8 +18,8 @@ import {
   Hash,
 } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
-import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { ConfirmModal, useModal } from '@/components/ui/Modal';
 import { useTransactionActions, useTransactions } from '@/stores/transactionStore';
 import { useAccounts } from '@/stores/accountStore';

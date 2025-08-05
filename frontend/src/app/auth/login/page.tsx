@@ -16,9 +16,12 @@ import {
   Loader2,
   ArrowLeft
 } from 'lucide-react';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import Card, { CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { loginSchema, type LoginFormData } from '@/lib/validations/auth';
 import { useLogin } from '@/stores/authStore';
 import { cn } from '@/lib/utils';
@@ -30,11 +33,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginFormData>({
+  const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
@@ -110,68 +109,104 @@ export default function LoginPage() {
               )}
 
               {/* Login Form */}
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                {/* Email Field */}
-                <div>
-                  <Input
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  {/* Email Field */}
+                  <FormField
+                    control={form.control}
                     name="email"
-                    type="email"
-                    label="Correo electrónico"
-                    placeholder="tu@email.com"
-                    leftIcon={<Mail className="w-4 h-4" />}
-                    error={errors.email?.message}
-                    disabled={isLoading}
-                    autoComplete="email"
-                    onChange={register('email').onChange}
-                    onBlur={register('email').onBlur}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2">
+                          <Mail className="w-4 h-4" />
+                          Correo electrónico
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="tu@email.com"
+                            autoComplete="email"
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
 
-                {/* Password Field */}
-                <div>
-                  <Input
+                  {/* Password Field */}
+                  <FormField
+                    control={form.control}
                     name="password"
-                    type="password"
-                    label="Contraseña"
-                    placeholder="Tu contraseña"
-                    leftIcon={<Lock className="w-4 h-4" />}
-                    error={errors.password?.message}
-                    disabled={isLoading}
-                    autoComplete="current-password"
-                    onChange={register('password').onChange}
-                    onBlur={register('password').onBlur}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2">
+                          <Lock className="w-4 h-4" />
+                          Contraseña
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              type={showPassword ? "text" : "password"}
+                              placeholder="Tu contraseña"
+                              autoComplete="current-password"
+                              disabled={isLoading}
+                              {...field}
+                            />
+                            <button
+                              type="button"
+                              className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                              onClick={() => setShowPassword(!showPassword)}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4 text-muted-foreground" />
+                              ) : (
+                                <Eye className="h-4 w-4 text-muted-foreground" />
+                              )}
+                            </button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
 
-                {/* Remember Me & Forgot Password */}
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="w-4 h-4 text-accent-primary bg-background-secondary border-border-primary rounded focus:ring-accent-primary focus:ring-2"
-                    />
-                    <span className="text-sm text-text-muted">Recordarme</span>
-                  </label>
+                  {/* Remember Me & Forgot Password */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="remember" />
+                      <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">
+                        Recordarme
+                      </Label>
+                    </div>
 
-                  <Link
-                    href="/auth/forgot-password"
-                    className="text-sm text-accent-primary hover:text-accent-secondary transition-colors"
+                    <Link
+                      href="/auth/forgot-password"
+                      className="text-sm text-primary hover:text-primary/80 transition-colors"
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </Link>
+                  </div>
+
+                  {/* Submit Button */}
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    size="lg"
+                    disabled={isLoading || form.formState.isSubmitting}
                   >
-                    ¿Olvidaste tu contraseña?
-                  </Link>
-                </div>
-
-                {/* Submit Button */}
-                <Button
-                  type="submit"
-                  fullWidth
-                  size="lg"
-                  isLoading={isLoading}
-                  disabled={isSubmitting}
-                >
-                  {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
-                </Button>
-              </form>
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Iniciando sesión...
+                      </>
+                    ) : (
+                      'Iniciar sesión'
+                    )}
+                  </Button>
+                </form>
+              </Form>
 
               {/* Divider */}
               <div className="relative my-6">
@@ -187,9 +222,8 @@ export default function LoginPage() {
               <div className="space-y-3">
                 <Button
                   variant="outline"
-                  fullWidth
                   disabled={isLoading}
-                  className="relative"
+                  className="relative w-full"
                 >
                   <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
                     <path
@@ -214,9 +248,8 @@ export default function LoginPage() {
 
                 <Button
                   variant="outline"
-                  fullWidth
                   disabled={isLoading}
-                  className="relative"
+                  className="relative w-full"
                 >
                   <svg className="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>

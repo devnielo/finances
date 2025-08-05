@@ -1,263 +1,92 @@
-'use client';
+import * as React from "react"
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils"
 
-interface CardProps {
-  children: React.ReactNode;
-  className?: string;
-  hover?: boolean;
-  purple?: boolean;
-  padding?: 'none' | 'sm' | 'md' | 'lg';
-  onClick?: () => void;
-}
-
-const paddingClasses = {
-  none: '',
-  sm: 'p-4',
-  md: 'p-6',
-  lg: 'p-8',
-};
-
-export default function Card({ 
-  children, 
-  className, 
-  hover = false, 
-  purple = false,
-  padding = 'md',
-  onClick 
-}: CardProps) {
-  // Si necesita animaciones o click, usa motion.div
-  if (onClick || hover) {
-    return (
-      <motion.div
-        onClick={onClick}
-        whileHover={hover ? { y: -2, scale: 1.01 } : {}}
-        transition={{ duration: 0.2 }}
-        className={cn(
-          'bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm',
-          hover && 'hover:shadow-md cursor-pointer',
-          purple && 'bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-purple-200 dark:border-purple-700',
-          paddingClasses[padding],
-          className
-        )}
-      >
-        {children}
-      </motion.div>
-    );
-  }
-  
-  // Para casos estáticos, usa div normal
+function Card({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
+      data-slot="card"
       className={cn(
-        'bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm',
-        purple && 'bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-purple-200 dark:border-purple-700',
-        paddingClasses[padding],
+        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
         className
       )}
-    >
-      {children}
-    </div>
-  );
+      {...props}
+    />
+  )
 }
 
-// Subcomponentes para Card
-export function CardHeader({ children, className }: { children: React.ReactNode; className?: string }) {
+function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <div className={cn('mb-4', className)}>
-      {children}
-    </div>
-  );
+    <div
+      data-slot="card-header"
+      className={cn(
+        "@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6",
+        className
+      )}
+      {...props}
+    />
+  )
 }
 
-export function CardTitle({ children, className }: { children: React.ReactNode; className?: string }) {
+function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <h3 className={cn('text-lg font-semibold text-text-primary', className)}>
-      {children}
-    </h3>
-  );
+    <div
+      data-slot="card-title"
+      className={cn("leading-none font-semibold", className)}
+      {...props}
+    />
+  )
 }
 
-export function CardDescription({ children, className }: { children: React.ReactNode; className?: string }) {
+function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <p className={cn('text-sm text-text-muted mt-1', className)}>
-      {children}
-    </p>
-  );
+    <div
+      data-slot="card-description"
+      className={cn("text-muted-foreground text-sm", className)}
+      {...props}
+    />
+  )
 }
 
-export function CardContent({ children, className }: { children: React.ReactNode; className?: string }) {
+function CardAction({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <div className={cn(className)}>
-      {children}
-    </div>
-  );
+    <div
+      data-slot="card-action"
+      className={cn(
+        "col-start-2 row-span-2 row-start-1 self-start justify-self-end",
+        className
+      )}
+      {...props}
+    />
+  )
 }
 
-export function CardFooter({ children, className }: { children: React.ReactNode; className?: string }) {
+function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <div className={cn('mt-4 pt-4 border-t border-border-primary', className)}>
-      {children}
-    </div>
-  );
+    <div
+      data-slot="card-content"
+      className={cn("px-6", className)}
+      {...props}
+    />
+  )
 }
 
-// Card con estadísticas
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  change?: {
-    value: number;
-    isPositive: boolean;
-  };
-  icon?: React.ReactNode;
-  className?: string;
-}
-
-export function StatCard({ title, value, change, icon, className }: StatCardProps) {
+function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <Card hover className={cn('relative overflow-hidden', className)}>
-      <div className="flex items-center justify-between">
-        <div className="flex-1">
-          <p className="text-sm text-text-muted">{title}</p>
-          <p className="text-2xl font-bold text-text-primary mt-1">{value}</p>
-          {change && (
-            <div className={cn(
-              'flex items-center mt-2 text-sm',
-              change.isPositive ? 'text-success' : 'text-error'
-            )}>
-              <span>{change.isPositive ? '+' : ''}{change.value}%</span>
-            </div>
-          )}
-        </div>
-        {icon && (
-          <div className="text-accent-primary opacity-80">
-            {icon}
-          </div>
-        )}
-      </div>
-      
-      {/* Gradiente decorativo */}
-      <div className="absolute -right-6 -top-6 w-24 h-24 bg-gradient-to-br from-accent-primary/10 to-accent-secondary/5 rounded-full" />
-    </Card>
-  );
+    <div
+      data-slot="card-footer"
+      className={cn("flex items-center px-6 [.border-t]:pt-6", className)}
+      {...props}
+    />
+  )
 }
 
-// Card de balance
-interface BalanceCardProps {
-  title: string;
-  balance: number;
-  currency?: string;
-  trend?: 'up' | 'down' | 'stable';
-  trendValue?: number;
-  className?: string;
-}
-
-export function BalanceCard({ 
-  title, 
-  balance, 
-  currency = 'EUR', 
-  trend, 
-  trendValue,
-  className 
-}: BalanceCardProps) {
-  const formatBalance = (amount: number) => {
-    return new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency,
-    }).format(amount);
-  };
-
-  const getTrendColor = () => {
-    switch (trend) {
-      case 'up': return 'text-success';
-      case 'down': return 'text-error';
-      default: return 'text-text-muted';
-    }
-  };
-
-  return (
-    <Card purple className={cn('text-center', className)}>
-      <CardHeader>
-        <CardTitle className="text-text-secondary">{title}</CardTitle>
-      </CardHeader>
-      
-      <CardContent>
-        <div className="text-balance text-gradient mb-2">
-          {formatBalance(balance)}
-        </div>
-        
-        {trend && trendValue && (
-          <div className={cn('text-sm', getTrendColor())}>
-            {trend === 'up' && '↗ '}
-            {trend === 'down' && '↘ '}
-            {trend === 'stable' && '→ '}
-            {formatBalance(trendValue)}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-// Card de transacción
-interface TransactionCardProps {
-  description: string;
-  amount: number;
-  currency?: string;
-  date: string;
-  category?: string;
-  type: 'income' | 'expense' | 'transfer';
-  className?: string;
-  onClick?: () => void;
-}
-
-export function TransactionCard({ 
-  description, 
-  amount, 
-  currency = 'EUR', 
-  date, 
-  category, 
-  type,
-  className,
-  onClick 
-}: TransactionCardProps) {
-  const formatAmount = (value: number) => {
-    const formatted = new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency,
-    }).format(Math.abs(value));
-    
-    if (type === 'expense') return `-${formatted}`;
-    if (type === 'income') return `+${formatted}`;
-    return formatted;
-  };
-
-  const getAmountColor = () => {
-    switch (type) {
-      case 'income': return 'text-success';
-      case 'expense': return 'text-error';
-      default: return 'text-info';
-    }
-  };
-
-  return (
-    <Card hover onClick={onClick} className={cn('transition-all duration-200', className)}>
-      <div className="flex items-center justify-between">
-        <div className="flex-1 min-w-0">
-          <p className="font-medium text-text-primary truncate">{description}</p>
-          {category && (
-            <p className="text-sm text-text-muted">{category}</p>
-          )}
-          <p className="text-xs text-text-muted mt-1">{date}</p>
-        </div>
-        
-        <div className={cn('font-semibold text-right', getAmountColor())}>
-          {formatAmount(amount)}
-        </div>
-      </div>
-    </Card>
-  );
+export {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardAction,
+  CardDescription,
+  CardContent,
 }

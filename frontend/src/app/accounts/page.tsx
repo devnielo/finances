@@ -15,13 +15,35 @@ import {
   TrendingDown,
   DollarSign,
   CreditCard,
+  ArrowUpDown,
 } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
-import Card, { StatCard } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import Select from '@/components/ui/Select';
-import { ConfirmModal, useModal } from '@/components/ui/Modal';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAccounts, useAccountActions, useAccountSummary } from '@/stores/accountStore';
 import { AccountType } from '@/types';
 import { formatAccountBalance, getAccountTypeIcon, getAccountTypeName } from '@/lib/validations/account';
@@ -29,11 +51,11 @@ import { cn } from '@/lib/utils';
 
 const accountTypeOptions = [
   { value: '', label: 'Todos los tipos' },
-  { value: AccountType.ASSET, label: getAccountTypeName(AccountType.ASSET), icon: getAccountTypeIcon(AccountType.ASSET) },
-  { value: AccountType.LIABILITY, label: getAccountTypeName(AccountType.LIABILITY), icon: getAccountTypeIcon(AccountType.LIABILITY) },
-  { value: AccountType.EXPENSE, label: getAccountTypeName(AccountType.EXPENSE), icon: getAccountTypeIcon(AccountType.EXPENSE) },
-  { value: AccountType.REVENUE, label: getAccountTypeName(AccountType.REVENUE), icon: getAccountTypeIcon(AccountType.REVENUE) },
-  { value: AccountType.INITIAL_BALANCE, label: getAccountTypeName(AccountType.INITIAL_BALANCE), icon: getAccountTypeIcon(AccountType.INITIAL_BALANCE) },
+  { value: AccountType.ASSET, label: getAccountTypeName(AccountType.ASSET) },
+  { value: AccountType.LIABILITY, label: getAccountTypeName(AccountType.LIABILITY) },
+  { value: AccountType.EXPENSE, label: getAccountTypeName(AccountType.EXPENSE) },
+  { value: AccountType.REVENUE, label: getAccountTypeName(AccountType.REVENUE) },
+  { value: AccountType.INITIAL_BALANCE, label: getAccountTypeName(AccountType.INITIAL_BALANCE) },
 ];
 
 const sortOptions = [
@@ -56,7 +78,7 @@ export default function AccountsPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   
   // Modal de confirmación para eliminar
-  const deleteModal = useModal();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [accountToDelete, setAccountToDelete] = useState<string | null>(null);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
@@ -125,7 +147,7 @@ export default function AccountsPage() {
 
   const handleDeleteClick = (accountId: string) => {
     setAccountToDelete(accountId);
-    deleteModal.openModal();
+    setDeleteDialogOpen(true);
   };
 
   const handleConfirmDelete = async () => {
@@ -134,7 +156,7 @@ export default function AccountsPage() {
     setIsDeletingAccount(true);
     try {
       await deleteAccount(accountToDelete);
-      deleteModal.closeModal();
+      setDeleteDialogOpen(false);
       setAccountToDelete(null);
     } catch (error) {
       console.error('Error al eliminar cuenta:', error);
@@ -144,96 +166,160 @@ export default function AccountsPage() {
   };
 
   const getBalanceColor = (balance: number, type: AccountType) => {
-    if (balance === 0) return 'text-text-muted';
+    if (balance === 0) return 'text-muted-foreground';
     
     switch (type) {
       case AccountType.ASSET:
-        return balance > 0 ? 'text-success' : 'text-error';
+        return balance > 0 ? 'text-green-600' : 'text-red-600';
       case AccountType.LIABILITY:
-        return balance < 0 ? 'text-success' : 'text-warning';
+        return balance < 0 ? 'text-green-600' : 'text-yellow-600';
       default:
-        return balance > 0 ? 'text-success' : 'text-error';
+        return balance > 0 ? 'text-green-600' : 'text-red-600';
     }
+  };
+
+  const getAccountIcon = (type: AccountType) => {
+    const iconMap = {
+      [AccountType.ASSET]: '💰',
+      [AccountType.LIABILITY]: '💳',
+      [AccountType.EXPENSE]: '💸',
+      [AccountType.REVENUE]: '💵',
+      [AccountType.INITIAL_BALANCE]: '⚖️',
+    };
+    return iconMap[type] || '💰';
   };
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-text-primary">Cuentas</h1>
-            <p className="text-text-muted">Gestiona tus cuentas financieras</p>
+            <h1 className="text-3xl font-bold tracking-tight">Cuentas</h1>
+            <p className="text-muted-foreground">
+              Gestiona tus cuentas financieras
+            </p>
           </div>
           
-          <Button
-            leftIcon={<Plus className="w-4 h-4" />}
-            onClick={handleCreateAccount}
-          >
+          <Button onClick={handleCreateAccount}>
+            <Plus className="w-4 h-4 mr-2" />
             Nueva Cuenta
           </Button>
         </div>
 
         {/* Estadísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            title="Total de Cuentas"
-            value={summary.totalAccounts}
-            icon={<Wallet className="w-6 h-6" />}
-          />
-          <StatCard
-            title="Balance Total"
-            value={formatAccountBalance(summary.totalBalance, 'EUR')}
-            icon={<DollarSign className="w-6 h-6" />}
-          />
-          <StatCard
-            title="Cuentas de Activos"
-            value={summary.assetCount}
-            icon={<TrendingUp className="w-6 h-6" />}
-          />
-          <StatCard
-            title="Cuentas de Pasivos"
-            value={summary.liabilityCount}
-            icon={<TrendingDown className="w-6 h-6" />}
-          />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total de Cuentas
+              </CardTitle>
+              <Wallet className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{summary.totalAccounts}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Balance Total
+              </CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {formatAccountBalance(summary.totalBalance, 'EUR')}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Cuentas de Activos
+              </CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{summary.assetCount}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Cuentas de Pasivos
+              </CardTitle>
+              <TrendingDown className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{summary.liabilityCount}</div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Filtros y búsqueda */}
         <Card>
-          <div className="space-y-4">
+          <CardHeader>
+            <CardTitle>Filtros</CardTitle>
+            <CardDescription>
+              Busca y filtra tus cuentas
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
-                <Input
-                  placeholder="Buscar cuentas..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  leftIcon={<Search className="w-4 h-4" />}
-                />
+                <Label htmlFor="search" className="sr-only">
+                  Buscar cuentas
+                </Label>
+                <div className="relative">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="search"
+                    placeholder="Buscar cuentas..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-8"
+                  />
+                </div>
               </div>
               
               <div className="flex gap-2">
-                <Select
-                  options={accountTypeOptions}
-                  value={selectedType}
-                  onChange={setSelectedType}
-                  placeholder="Tipo de cuenta"
-                  className="w-48"
-                />
+                <Select value={selectedType} onValueChange={setSelectedType}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Tipo de cuenta" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {accountTypeOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 
-                <Select
-                  options={sortOptions}
-                  value={sortBy}
-                  onChange={setSortBy}
-                  placeholder="Ordenar por"
-                  className="w-40"
-                />
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Ordenar por" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sortOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 
                 <Button
                   variant="outline"
+                  size="icon"
                   onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
                   aria-label={`Orden ${sortOrder === 'asc' ? 'ascendente' : 'descendente'}`}
                 >
-                  {sortOrder === 'asc' ? '↑' : '↓'}
+                  <ArrowUpDown className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -241,76 +327,86 @@ export default function AccountsPage() {
             {/* Filtros activos */}
             {(searchTerm || selectedType) && (
               <div className="flex items-center gap-2 text-sm">
-                <Filter className="w-4 h-4 text-text-muted" />
-                <span className="text-text-muted">Filtros activos:</span>
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Filtros activos:</span>
                 {searchTerm && (
-                  <span className="px-2 py-1 bg-accent-primary/10 text-accent-primary rounded-md">
+                  <Badge variant="secondary">
                     Búsqueda: &ldquo;{searchTerm}&rdquo;
-                  </span>
+                  </Badge>
                 )}
                 {selectedType && (
-                  <span className="px-2 py-1 bg-accent-primary/10 text-accent-primary rounded-md">
+                  <Badge variant="secondary">
                     Tipo: {getAccountTypeName(selectedType as AccountType)}
-                  </span>
+                  </Badge>
                 )}
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => {
                     setSearchTerm('');
                     setSelectedType('');
                   }}
-                  className="text-accent-primary hover:text-accent-secondary text-sm underline"
+                  className="h-auto p-1 text-xs"
                 >
                   Limpiar filtros
-                </button>
+                </Button>
               </div>
             )}
-          </div>
+          </CardContent>
         </Card>
 
-        {/* Lista de cuentas */}
+        {/* Error state */}
         {error && (
-          <Card className="border-error/20 bg-error/5">
-            <div className="text-error">
-              <p className="font-medium">Error al cargar las cuentas</p>
-              <p className="text-sm mt-1">{error}</p>
+          <Alert variant="destructive">
+            <AlertDescription>
+              Error al cargar las cuentas: {error}
               <Button
                 variant="outline"
                 size="sm"
-                className="mt-2"
+                className="ml-2"
                 onClick={() => fetchAccounts()}
               >
                 Reintentar
               </Button>
-            </div>
-          </Card>
+            </AlertDescription>
+          </Alert>
         )}
 
+        {/* Lista de cuentas */}
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {[...Array(6)].map((_, index) => (
-              <Card key={index} className="animate-pulse">
-                <div className="h-32 bg-surface-hover rounded"></div>
+              <Card key={index}>
+                <CardHeader>
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-4 w-1/3" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-20 w-full" />
+                </CardContent>
               </Card>
             ))}
           </div>
         ) : filteredAndSortedAccounts.length === 0 ? (
-          <Card className="text-center py-12">
-            <CreditCard className="w-12 h-12 text-text-muted mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-text-primary mb-2">
-              {accounts.length === 0 ? 'No tienes cuentas aún' : 'No se encontraron cuentas'}
-            </h3>
-            <p className="text-text-muted mb-4">
-              {accounts.length === 0 
-                ? 'Crea tu primera cuenta para comenzar a gestionar tus finanzas'
-                : 'Intenta ajustar los filtros o crear una nueva cuenta'
-              }
-            </p>
-            <Button onClick={handleCreateAccount}>
-              {accounts.length === 0 ? 'Crear mi primera cuenta' : 'Nueva Cuenta'}
-            </Button>
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <CreditCard className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">
+                {accounts.length === 0 ? 'No tienes cuentas aún' : 'No se encontraron cuentas'}
+              </h3>
+              <p className="text-muted-foreground text-center mb-4">
+                {accounts.length === 0 
+                  ? 'Crea tu primera cuenta para comenzar a gestionar tus finanzas'
+                  : 'Intenta ajustar los filtros o crear una nueva cuenta'
+                }
+              </p>
+              <Button onClick={handleCreateAccount}>
+                {accounts.length === 0 ? 'Crear mi primera cuenta' : 'Nueva Cuenta'}
+              </Button>
+            </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredAndSortedAccounts.map((account, index) => (
               <motion.div
                 key={account.id}
@@ -318,50 +414,58 @@ export default function AccountsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2, delay: index * 0.05 }}
               >
-                <Card hover className="h-full">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-lg">{getAccountTypeIcon(account.type)}</span>
-                      <div>
-                        <h3 className="font-medium text-text-primary">{account.name}</h3>
-                        <p className="text-sm text-text-muted">{getAccountTypeName(account.type)}</p>
+                <Card className="hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <Avatar>
+                          <AvatarFallback>
+                            {getAccountIcon(account.type)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <CardTitle className="text-base">{account.name}</CardTitle>
+                          <p className="text-sm text-muted-foreground">
+                            {getAccountTypeName(account.type)}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex space-x-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleViewAccount(account.id)}
+                          aria-label="Ver cuenta"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditAccount(account.id)}
+                          aria-label="Editar cuenta"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteClick(account.id)}
+                          aria-label="Eliminar cuenta"
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
-                    
-                    <div className="flex space-x-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleViewAccount(account.id)}
-                        aria-label="Ver cuenta"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEditAccount(account.id)}
-                        aria-label="Editar cuenta"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteClick(account.id)}
-                        aria-label="Eliminar cuenta"
-                        className="text-error hover:text-error"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
+                  </CardHeader>
 
-                  <div className="space-y-2">
+                  <CardContent className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-text-muted">Balance:</span>
+                      <span className="text-sm text-muted-foreground">Balance:</span>
                       <span className={cn(
-                        'font-medium',
+                        'font-semibold',
                         getBalanceColor(account.balance, account.type)
                       )}>
                         {formatAccountBalance(account.balance, account.currency)}
@@ -369,41 +473,51 @@ export default function AccountsPage() {
                     </div>
                     
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-text-muted">Moneda:</span>
-                      <span className="text-sm font-medium">{account.currency}</span>
+                      <span className="text-sm text-muted-foreground">Moneda:</span>
+                      <Badge variant="outline">{account.currency}</Badge>
                     </div>
 
                     {account.notes && (
-                      <div className="pt-2 border-t border-border-primary">
-                        <p className="text-xs text-text-muted truncate" title={account.notes}>
+                      <>
+                        <Separator />
+                        <p className="text-xs text-muted-foreground line-clamp-2">
                           {account.notes}
                         </p>
-                      </div>
+                      </>
                     )}
-                  </div>
 
-                  <div className="mt-4 pt-3 border-t border-border-primary">
-                    <p className="text-xs text-text-muted">
+                    <Separator />
+                    <p className="text-xs text-muted-foreground">
                       Creada: {new Date(account.createdAt).toLocaleDateString('es-ES')}
                     </p>
-                  </div>
+                  </CardContent>
                 </Card>
               </motion.div>
             ))}
           </div>
         )}
 
-        {/* Modal de confirmación para eliminar */}
-        <ConfirmModal
-          isOpen={deleteModal.isOpen}
-          onClose={deleteModal.closeModal}
-          onConfirm={handleConfirmDelete}
-          title="Eliminar Cuenta"
-          message="¿Estás seguro de que quieres eliminar esta cuenta? Esta acción no se puede deshacer y se eliminarán todas las transacciones asociadas."
-          confirmText="Eliminar"
-          type="danger"
-          isLoading={isDeletingAccount}
-        />
+        {/* Dialog de confirmación para eliminar */}
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Eliminar Cuenta</AlertDialogTitle>
+              <AlertDialogDescription>
+                ¿Estás seguro de que quieres eliminar esta cuenta? Esta acción no se puede deshacer y se eliminarán todas las transacciones asociadas.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleConfirmDelete}
+                disabled={isDeletingAccount}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {isDeletingAccount ? 'Eliminando...' : 'Eliminar'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </Layout>
   );

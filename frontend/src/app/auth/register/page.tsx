@@ -15,9 +15,9 @@ import {
   ArrowLeft,
   Check
 } from 'lucide-react';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import Card, { CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { registerSchema, type RegisterFormData } from '@/lib/validations/auth';
 import { useRegister } from '@/stores/authStore';
 import { cn } from '@/lib/utils';

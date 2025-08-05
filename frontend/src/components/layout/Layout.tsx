@@ -64,7 +64,10 @@ export default function Layout({ children, title, subtitle, className }: LayoutP
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex h-screen bg-background-primary overflow-hidden">
+      <div
+        className="flex h-screen overflow-hidden"
+        style={{ backgroundColor: 'var(--color-background-primary)' }}
+      >
         {/* Sidebar */}
         <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
 
@@ -105,7 +108,10 @@ export default function Layout({ children, title, subtitle, className }: LayoutP
 // Componente de pantalla de carga
 function LoadingScreen() {
   return (
-    <div className="min-h-screen bg-background-primary flex items-center justify-center">
+    <div
+      className="min-h-screen flex items-center justify-center"
+      style={{ backgroundColor: 'var(--color-background-primary)' }}
+    >
       <div className="text-center">
         {/* Logo animado */}
         <motion.div
@@ -114,7 +120,12 @@ function LoadingScreen() {
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <div className="w-16 h-16 bg-gradient-to-br from-accent-primary to-accent-secondary rounded-2xl flex items-center justify-center mx-auto">
+          <div
+            className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto"
+            style={{
+              background: `linear-gradient(to bottom right, var(--color-accent-primary), var(--color-accent-secondary))`
+            }}
+          >
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
@@ -129,10 +140,18 @@ function LoadingScreen() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          <h2 className="text-2xl font-bold text-gradient mb-2">
+          <h2
+            className="text-2xl font-bold mb-2"
+            style={{
+              background: `linear-gradient(45deg, var(--color-accent-primary), var(--color-accent-secondary))`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}
+          >
             FinanceApp
           </h2>
-          <p className="text-text-muted">
+          <p style={{ color: 'var(--color-text-muted)' }}>
             Cargando tu experiencia financiera...
           </p>
         </motion.div>
@@ -144,12 +163,18 @@ function LoadingScreen() {
           transition={{ delay: 0.4, duration: 0.5 }}
           className="mt-8 w-64 mx-auto"
         >
-          <div className="h-1 bg-background-secondary rounded-full overflow-hidden">
+          <div
+            className="h-1 rounded-full overflow-hidden"
+            style={{ backgroundColor: 'var(--color-background-secondary)' }}
+          >
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: '100%' }}
               transition={{ duration: 2, ease: 'easeInOut' }}
-              className="h-full bg-gradient-to-r from-accent-primary to-accent-secondary rounded-full"
+              className="h-full rounded-full"
+              style={{
+                background: `linear-gradient(to right, var(--color-accent-primary), var(--color-accent-secondary))`
+              }}
             />
           </div>
         </motion.div>
@@ -162,7 +187,12 @@ function LoadingScreen() {
 export function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-gradient-to-br from-background-primary via-background-secondary to-background-tertiary flex items-center justify-center p-4">
+      <div
+        className="min-h-screen flex items-center justify-center p-4"
+        style={{
+          background: `linear-gradient(to bottom right, var(--color-background-primary), var(--color-background-secondary), var(--color-background-card))`
+        }}
+      >
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}

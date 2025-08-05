@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { useMemo } from 'react';
 import { Transaction, CreateTransactionData, TransactionType, TransactionFilters, PaginatedResponse } from '@/types';
 import { apiClient } from '@/lib/api/client';
 
@@ -358,18 +359,30 @@ export const useTransactions = () => useTransactionStore((state) => ({
   filters: state.filters,
 }));
 
-export const useTransactionActions = () => useTransactionStore((state) => ({
-  fetchTransactions: state.fetchTransactions,
-  createTransaction: state.createTransaction,
-  updateTransaction: state.updateTransaction,
-  deleteTransaction: state.deleteTransaction,
-  getTransactionById: state.getTransactionById,
-  setFilters: state.setFilters,
-  clearFilters: state.clearFilters,
-  clearError: state.clearError,
-  setTransactions: state.setTransactions,
-  reconcileTransaction: state.reconcileTransaction,
-}));
+// Selector hooks estables para evitar loops infinitos
+export const useTransactionActions = () => {
+  return useMemo(() => {
+    const store = useTransactionStore.getState();
+    return {
+      fetchTransactions: store.fetchTransactions,
+      createTransaction: store.createTransaction,
+      updateTransaction: store.updateTransaction,
+      deleteTransaction: store.deleteTransaction,
+      getTransactionById: store.getTransactionById,
+      setFilters: store.setFilters,
+      clearFilters: store.clearFilters,
+      clearError: store.clearError,
+      setTransactions: store.setTransactions,
+      reconcileTransaction: store.reconcileTransaction,
+    };
+  }, []);
+};
+
+// Hooks individuales para mejor rendimiento
+export const useFetchTransactions = () => useTransactionStore((state) => state.fetchTransactions);
+export const useCreateTransaction = () => useTransactionStore((state) => state.createTransaction);
+export const useUpdateTransaction = () => useTransactionStore((state) => state.updateTransaction);
+export const useDeleteTransaction = () => useTransactionStore((state) => state.deleteTransaction);
 
 // Hook para obtener estadísticas de transacciones
 export const useTransactionStats = () => {

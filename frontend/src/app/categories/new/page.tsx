@@ -10,10 +10,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useCategoryStore } from '@/stores/categoryStore';
 import { categorySchema, CategoryFormData, validColors, ValidColor, ValidIcon } from '@/lib/validations/categories';
 import { Category } from '@/types';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import Card from '@/components/ui/Card';
-import Select from '@/components/ui/Select';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ColorPicker from '@/components/ui/ColorPicker';
 import IconPicker from '@/components/ui/IconPicker';
 

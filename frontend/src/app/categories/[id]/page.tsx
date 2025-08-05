@@ -11,8 +11,8 @@ import {
 import Link from 'next/link';
 import { useCategoryStore } from '@/stores/categoryStore';
 import { Category, CategoryStats } from '@/types';
-import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Modal from '@/components/ui/Modal';
 
 export default function CategoryDetailPage() {

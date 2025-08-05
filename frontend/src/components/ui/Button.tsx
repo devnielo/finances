@@ -1,175 +1,59 @@
-'use client';
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils"
 
-interface ButtonProps {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
-  isLoading?: boolean;
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
-  fullWidth?: boolean;
-  children: React.ReactNode;
-  className?: string;
-  disabled?: boolean;
-  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  type?: 'button' | 'submit' | 'reset';
-  form?: string;
-  'aria-label'?: string;
-}
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  {
+    variants: {
+      variant: {
+        default:
+          "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90",
+        destructive:
+          "bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+        outline:
+          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
+        secondary:
+          "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
+        ghost:
+          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-9 px-4 py-2 has-[>svg]:px-3",
+        sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
+        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
+        icon: "size-9",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
 
-const buttonVariants = {
-  primary: 'btn-primary',
-  secondary: 'btn-secondary',
-  outline: 'btn-outline',
-  ghost: 'btn-ghost',
-  danger: 'btn-danger',
-};
-
-const buttonSizes = {
-  sm: 'btn-sm',
-  md: '',
-  lg: 'btn-lg',
-};
-
-export default function Button({
-  variant = 'primary',
-  size = 'md',
-  isLoading = false,
-  leftIcon,
-  rightIcon,
-  fullWidth = false,
-  children,
+function Button({
   className,
-  disabled,
+  variant,
+  size,
+  asChild = false,
   ...props
-}: ButtonProps) {
-  const baseClasses = cn(
-    'btn',
-    buttonVariants[variant],
-    buttonSizes[size],
-    fullWidth && 'w-full',
-    (disabled || isLoading) && 'disabled',
-    className
-  );
+}: React.ComponentProps<"button"> &
+  VariantProps<typeof buttonVariants> & {
+    asChild?: boolean
+  }) {
+  const Comp = asChild ? Slot : "button"
 
   return (
-    <motion.button
-      whileHover={!disabled && !isLoading ? { scale: 1.02 } : {}}
-      whileTap={!disabled && !isLoading ? { scale: 0.98 } : {}}
-      transition={{ duration: 0.1 }}
-      className={baseClasses}
-      disabled={disabled || isLoading}
-      onClick={props.onClick}
-      type={props.type}
-      form={props.form}
-      aria-label={props['aria-label']}
-    >
-      <div className="flex items-center justify-center space-x-2">
-        {isLoading ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : (
-          leftIcon && <span className="flex-shrink-0">{leftIcon}</span>
-        )}
-        
-        {!isLoading && <span>{children}</span>}
-        
-        {!isLoading && rightIcon && (
-          <span className="flex-shrink-0">{rightIcon}</span>
-        )}
-      </div>
-    </motion.button>
-  );
-}
-
-// Componente de grupo de botones
-interface ButtonGroupProps {
-  children: React.ReactNode;
-  className?: string;
-}
-
-export function ButtonGroup({ children, className }: ButtonGroupProps) {
-  return (
-    <div className={cn('flex space-x-2', className)}>
-      {children}
-    </div>
-  );
-}
-
-// Componente de botón con icono
-interface IconButtonProps extends Omit<ButtonProps, 'children'> {
-  icon: React.ReactNode;
-  'aria-label': string;
-}
-
-export function IconButton({
-  icon,
-  className,
-  size = 'md',
-  ...props
-}: IconButtonProps) {
-  const sizeClasses = {
-    sm: 'p-1.5',
-    md: 'p-2',
-    lg: 'p-3',
-  };
-
-  return (
-    <Button
-      className={cn(
-        'rounded-full',
-        sizeClasses[size],
-        className
-      )}
-      size={size}
+    <Comp
+      data-slot="button"
+      className={cn(buttonVariants({ variant, size, className }))}
       {...props}
-    >
-      {icon}
-    </Button>
-  );
+    />
+  )
 }
 
-// Componente de botón flotante (FAB)
-interface FloatingActionButtonProps extends Omit<ButtonProps, 'variant' | 'children'> {
-  icon: React.ReactNode;
-  position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
-}
-
-export function FloatingActionButton({
-  icon,
-  position = 'bottom-right',
-  className,
-  ...props
-}: FloatingActionButtonProps) {
-  const positionClasses = {
-    'bottom-right': 'fixed bottom-6 right-6',
-    'bottom-left': 'fixed bottom-6 left-6',
-    'top-right': 'fixed top-6 right-6',
-    'top-left': 'fixed top-6 left-6',
-  };
-
-  return (
-    <motion.div
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.9 }}
-      className={cn(positionClasses[position], 'z-50')}
-    >
-      <Button
-        variant="primary"
-        size="lg"
-        className={cn(
-          'rounded-full w-14 h-14 shadow-purple-lg hover:shadow-purple',
-          className
-        )}
-        {...props}
-      >
-        {icon}
-      </Button>
-    </motion.div>
-  );
-}
+export { Button, buttonVariants }

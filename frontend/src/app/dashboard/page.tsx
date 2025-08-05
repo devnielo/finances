@@ -13,16 +13,16 @@ import {
   Plus,
 } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
-import Card, { 
-  StatCard, 
-  BalanceCard, 
-  TransactionCard,
+import {
+  Card,
   CardHeader,
   CardTitle,
-  CardContent 
-} from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import { formatCurrency, formatDate } from '@/lib/utils';
+  CardContent,
+  CardDescription,
+  CardFooter
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 // Mock data - esto se reemplazará con datos reales del backend
 const mockData = {
@@ -171,24 +171,49 @@ export default function DashboardPage() {
                   {mockData.accounts.map((account) => (
                     <div
                       key={account.id}
-                      className="flex items-center justify-between p-4 bg-background-secondary rounded-lg hover:bg-background-hover transition-colors cursor-pointer"
+                      className="flex items-center justify-between p-4 rounded-lg transition-colors cursor-pointer"
+                      style={{
+                        backgroundColor: 'var(--color-background-secondary)',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'var(--color-background-hover)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'var(--color-background-secondary)';
+                      }}
                     >
                       <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-accent-primary to-accent-secondary rounded-lg flex items-center justify-center">
+                        <div
+                          className="w-12 h-12 rounded-lg flex items-center justify-center"
+                          style={{
+                            background: `linear-gradient(to bottom right, var(--color-accent-primary), var(--color-accent-secondary))`
+                          }}
+                        >
                           <CreditCard className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                          <h3 className="font-medium text-text-primary">{account.name}</h3>
-                          <p className="text-sm text-text-muted">
+                          <h3 className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                            {account.name}
+                          </h3>
+                          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
                             {account.type === 'checking' ? 'Cuenta Corriente' : 'Cuenta de Ahorros'}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-text-primary">
+                        <p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                           {formatCurrency(account.balance)}
                         </p>
-                        <button className="text-text-muted hover:text-text-secondary transition-colors">
+                        <button
+                          className="transition-colors"
+                          style={{ color: 'var(--color-text-muted)' }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.color = 'var(--color-text-secondary)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.color = 'var(--color-text-muted)';
+                          }}
+                        >
                           <MoreHorizontal className="w-4 h-4" />
                         </button>
                       </div>
@@ -280,8 +305,15 @@ export default function DashboardPage() {
                 <CardTitle>Gastos por Categoría</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-64 bg-gradient-to-br from-accent-primary/10 to-accent-secondary/5 rounded-lg flex items-center justify-center">
-                  <div className="text-center text-text-muted">
+                <div
+                  className="h-64 rounded-lg flex items-center justify-center"
+                  style={{
+                    background: `linear-gradient(to bottom right,
+                      color-mix(in oklab, var(--color-accent-primary) 10%, transparent),
+                      color-mix(in oklab, var(--color-accent-secondary) 5%, transparent))`
+                  }}
+                >
+                  <div className="text-center" style={{ color: 'var(--color-text-muted)' }}>
                     <TrendingUp className="w-12 h-12 mx-auto mb-2 opacity-50" />
                     <p>Gráfico de gastos por categoría</p>
                     <p className="text-sm">(Próximamente)</p>
@@ -295,8 +327,15 @@ export default function DashboardPage() {
                 <CardTitle>Tendencia Mensual</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-64 bg-gradient-to-br from-accent-primary/10 to-accent-secondary/5 rounded-lg flex items-center justify-center">
-                  <div className="text-center text-text-muted">
+                <div
+                  className="h-64 rounded-lg flex items-center justify-center"
+                  style={{
+                    background: `linear-gradient(to bottom right,
+                      color-mix(in oklab, var(--color-accent-primary) 10%, transparent),
+                      color-mix(in oklab, var(--color-accent-secondary) 5%, transparent))`
+                  }}
+                >
+                  <div className="text-center" style={{ color: 'var(--color-text-muted)' }}>
                     <TrendingUp className="w-12 h-12 mx-auto mb-2 opacity-50" />
                     <p>Gráfico de tendencia mensual</p>
                     <p className="text-sm">(Próximamente)</p>
